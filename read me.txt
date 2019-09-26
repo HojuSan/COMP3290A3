@@ -1,0 +1,23 @@
+Hello Dan
+
+For the Case !!!= there was a large amount of debate wether this was 
+1 token as !!!=
+2 tokens as !! !=
+3 tokens as ! ! !=
+I decided to do it as 3 tokens since in the CD19 Lexical structure Grammar print out 
+
+7. Other significant lexical items in CD19 are: semicolon (;) leftbracket ([)
+rightbracket (]) comma (,) leftparen ( ( ) rightparen ( ) ) equals (=) plus (+)
+minus (-) star (*) slash (/) percent (%) carat (^) less (<) greater (>) exclamation
+(!) quote (“) colon (:) dot (.)
+
+Hense I understood this as each time a token can't be completed it is seen as an individual token, 
+not clumped up together since that would require the code to read future tokens which a statemachine 
+cannot do. That was my reasoning
+
+Then my friend sent the email so now it seperates !!!!= into !!! != for those juicy "Bonus points" haha
+
+Outside that it runs on the school computers and it should run find with a 
+javac A1.java
+into a 
+java A1 test.txt

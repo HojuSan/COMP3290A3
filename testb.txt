@@ -1,0 +1,16 @@
+/--at least on that fails semantically(but suceeds lexically and syntactically)
+/--syntactically using a variable that doesn't exist
+/--semantically the code needs to run
+
+/-- should break at printline since x was never instantiated
+
+CD19 HelloWorld
+main
+        s : string
+    
+begin
+
+    printline x ;   /--x has never been defined
+    
+end CD19 HelloWorld 
+

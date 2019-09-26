@@ -1,0 +1,41 @@
+/--d) several that you expect to run successfully when later compiled by your compiler (and also part 3).
+/--These should include at least one that just has a main program and simple variables,
+/--one that has arrays, and one that has function(s)/procedure(s) using all three methods
+/--of parameter passing that are allowed in CD19. (3)
+/--<program> ::= CD19 <id> <consts> <types> <arrays> <funcs> <mainbody>
+/--<mainbody> ::= main <slist> begin <stats> end CD19 <id>
+
+/--simple program with a function that checks if something is 5
+CD19 testd3
+
+/--<func> ::= function <id> ( <plist> ) : <rtype> <funcbody>
+/-- apparantely it has to be the whole word now
+
+/-- that simply sees if the number is 5 or not
+function simple(i : real): void
+    x : real
+
+    begin
+
+        x = i;
+
+        if( i == (2+3) )
+            printline "i is equal to 5" ;
+        else
+            printline "i is not equal to 5" ;
+        end 
+    end
+        
+
+main
+
+    i : real,
+    
+    begin
+        i = 5;
+
+        simple(i) ;
+
+    end
+
+CD19 testd3

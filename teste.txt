@@ -1,0 +1,76 @@
+/--e) Write a program in CD19 that will compute the area of a polygon from a set of (x, y) Cartesian points. (1)
+/--The program should have functions to (i) input the number of points (up to 20) and the
+/--points themselves, and (ii) compute the area of the polygon.
+/--The main program should be used to output the result.
+/--<program> ::= CD19 <id> <consts> <types> <arrays> <funcs> <mainbody>
+/--<mainbody> ::= main <slist> begin <stats> end CD19 <id>
+
+/--takes a users input and calculates the polgons area
+CD19 testE
+
+constants
+    COUNT = 20
+
+types
+    point is 
+        x : real,
+        y : real
+    end
+
+points is array [COUNT] of point
+
+arrays
+    polygon : points
+
+/--recieves an array of points to do the calculations
+function calArea(points : array): real
+
+        area : real,
+        points : array
+
+    begin
+
+        points = array;
+
+        /--Start of the formula
+        for(i = 0; i < COUNT-1)
+
+            area = area + ((points[i].x * points[i+1].y) - (points[i].y * points[i+1].x)) ;
+
+        end
+
+        /--absoloute value of the area
+        /--area = Math.abs(area);
+        /--commented out since negative areas won't exist
+
+        /--half the total calculation
+        area = area/2;
+
+        return area;
+    end
+
+main
+
+    i : boolean
+    
+    begin
+
+        /--forloop and inputs the individual points by user, presuming iostat means input
+        for(i = 0; i < COUNT-1)
+            /--<iostat> ::= input <vlist> | print <prlist> | printline <prlist>
+            /--<vlist> ::= <var> , <vlist> | <var>
+
+            printline "next variable will be the x point";
+            polygon[i].x = input;
+
+            printline "next variable will be the y point";
+            polygon[i].y = input;
+
+        end
+
+        /--function does its job and prints out the result
+        printline "area of polygon is " + calArea(polygon);
+
+    end
+
+CD19 testE

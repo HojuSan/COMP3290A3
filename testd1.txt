@@ -1,0 +1,32 @@
+/--d) several that you expect to run successfully when later compiled by your compiler (and also part 3).
+/--These should include at least one that just has a main program and simple variables,
+/--one that has arrays, and one that has function(s)/procedure(s) using all three methods
+/--of parameter passing that are allowed in CD19. (3)
+/--<program> ::= CD19 <id> <consts> <types> <arrays> <funcs> <mainbody>
+/--<mainbody> ::= main <slist> begin <stats> end CD19 <id>
+
+/--instantiates 3 floats pluses x and y and prints out the result
+CD19 testd1
+
+main
+
+/--instantiated variables
+    x : real,
+    y : real,
+    z : real
+
+/--main function
+    begin
+
+/--set variables
+        x = 1 ;
+        y = 2 ;
+/--do the actual function
+        x+y = z ;
+
+/--print result
+        printline z ;
+
+    end
+
+CD19 testd1

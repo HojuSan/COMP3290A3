@@ -1,0 +1,58 @@
+/--) several that you expect to run successfully when later compiled by your compiler (and also part 3).
+/--hese should include at least one that just has a main program and simple variables,
+/--ne that has arrays, and one that has function(s)/procedure(s) using all three methods
+/--f parameter passing that are allowed in CD19. (3)
+/--<program> ::= CD19 <id> <consts> <types> <arrays> <funcs> <mainbody>
+/--<mainbody> ::= main <slist> begin <stats> end CD19 <id>
+
+/--creates an array of marks, set values into it then prints them out in order
+CD19 testd2
+
+/--constants
+constants
+    COUNT = 10
+
+/--structs
+types
+    mark is 
+        id : integer,
+        midterm : real,
+        final : real
+    end
+
+marks is array [COUNT] of mark
+
+/--arrays
+arrays
+    comp3290 : marks
+
+/--main function
+main
+
+    i : boolean
+    
+    begin
+
+/--set items into array
+        for(i = 0; i < COUNT)
+
+            comp3290[i].id = i ;
+            comp3290[i].midterm = 50 + i ;
+            comp3290[i].final = 80 + i ;
+
+            i = i + 1;
+        end
+
+/-- print out the elements
+        for(i = 0; i < COUNT)
+
+            printline comp3290[i].id ;
+            printline comp3290[i].midterm ;
+            printline comp3290[i].final ;
+
+            i = i + 1;
+        end
+
+    end
+
+CD19 testd2

@@ -1,0 +1,7 @@
+/--<program> ::= CD19 <id> <consts> <types> <arrays> <funcs> <mainbody>
+/--<mainbody> ::= main <slist> begin <stats> end CD19 <id>
+
+for teste that calculates the polygons, no functionality for absoloute values was found
+which doesn't take negative areas of polygons into account
+
+for teste not sure how input is done, not really clear.
