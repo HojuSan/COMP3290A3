@@ -22,6 +22,7 @@ public class Scanner
 	private boolean finished = false;
 	private String outputLimit = "";
 	private int tokenNum = 0;
+	private boolean prevPrint = false;
 	
 	private boolean debug = false;//true;		//if(debug == true){
 	//reserved words to not use
@@ -76,7 +77,7 @@ public class Scanner
                 c = (char)output.readChar();			//get new character from outputcontroller
             }
             //when its a newline reset coutners
-            if(c == '\n')
+            if(c == '\n' || c == '\r' || ((byte)c == -1))
             {
 				if(debug == true){System.out.println("state3");}
                 CR++;
@@ -246,15 +247,17 @@ public class Scanner
 				case ERROR:
 					if(isExclamation(prevChar) && isEqual(c))					//edge case !!!!= finds the !=
 					{
-							
+						
 						//System.out.println("buffer is "+buffer+" c is "+c);
 						currentState = State.START;		//return to start
 
 						buffer = buffer.substring(0, buffer.length()-1);		//-1 to remove the ! to make the !=
 						//System.out.println("after buffer is "+buffer+" c is "+c);
+						//outputLimit = "";
 						foundToken = new Token(Token.TUNDF, CR, CP, buffer);	//create the undefined
 						tokenNum++;
 						buffer = "";
+						//outputLimit = "";
 						debugPrint(foundToken, prevError);
 						foundToken = new Token(Token.TNEQL, CR, CP, buffer);	//create the not equals
 						buffer = "";
@@ -270,8 +273,10 @@ public class Scanner
 						prevChar = c;
 						prevError = true;
 						currentState = State.START;
+						//outputLimit = "";
 						foundToken = new Token(Token.TUNDF, CR, CP, buffer);
 						buffer = "";			
+						//System.out.println("in else of error block");
 					}
 				break;
 
@@ -318,9 +323,10 @@ public class Scanner
 						//System.out.println("after buffer is "+buffer+" c is "+c);
 						foundToken = new Token(Token.TILIT, CR, CP, buffer);
 						tokenNum++;
+						outputLimit += (foundToken.shortString());
 						buffer = "";
 						debugPrint(foundToken, prevError);
-						foundToken = new Token(Token.TDOT, CR, CP, buffer);
+						foundToken = new Token(Token.TDOT, CR, CP, null);
 						buffer = "";
 					}
 				break;
@@ -517,6 +523,7 @@ public class Scanner
 					{
 						buffer += c;
 						currentState = State.COMMENT;
+						//buffer = "";
 					}
 					//make it into -= instead
 					else if(c == '=')
@@ -525,9 +532,8 @@ public class Scanner
 						buffer = buffer.substring(0, buffer.length()-1);
 						foundToken = new Token(Token.TDIVD, CR, CP, null);
 						tokenNum++;
-						buffer = "";
+						outputLimit += (foundToken.shortString());
 						debugPrint(foundToken, prevError);
-						buffer = "";
 						foundToken = new Token(Token.TMNEQ, CR, CP, null);
 						buffer = "";
 					}
@@ -541,7 +547,7 @@ public class Scanner
 						//System.out.println("after buffer is "+buffer+" c is "+c);
 						foundToken = new Token(Token.TDIVD, CR, CP, null);
 						tokenNum++;
-						buffer = "";
+						outputLimit += (foundToken.shortString());
 						debugPrint(foundToken, prevError);
 						//System.out.println("---------------------inside slash dash character is "+c);
 						foundToken = new Token(Token.TMINS, CR, CP, null);
@@ -552,7 +558,7 @@ public class Scanner
         }
 
 		//concatenate string
-		outputLimit += (foundToken.debugString() +" ");
+		outputLimit += (foundToken.shortString());
 
 		debugPrint(foundToken, prevError);
 
@@ -563,38 +569,53 @@ public class Scanner
 	
 	public void debugPrint(Token foundToken, boolean prevError)
 	{
-//		System.out.println(temp.toString() +" ");
+		//System.out.println(temp.toString() +" ");
 		//printout format
-		if(foundToken.value() == 62 && prevError == true)
+		//lexical errors
+		if(foundToken.value() == 62)
 		{
-			//System.out.print("case1!!!!!");
-			//if i add a \n to TUNDF it just adds extra space
-			System.out.println("\nTUNDF" +" ");
-			System.out.println("lexical error "+foundToken.getStr());
-			outputLimit = "";
-		}
-		else if(foundToken.value() == 62)
-		{
-			//System.out.println();
+			//System.out.println("outputlimit-["+ outputLimit+"]");
+			// if(outputLimit=="")
+			// {
+			// 	System.out.println();
+			// }
+			if(!prevPrint)
+			{
+				System.out.println();
+			}
 			//System.out.print("case2!!!!!");
-			System.out.println("\nTUNDF" +" ");
+			System.out.println("TUNDF");
 			System.out.println("lexical error "+foundToken.getStr());
 			outputLimit = "";
+			prevError = false;
+			prevPrint = true;			//just to remove the space
+			return;
 		}
-		else if(66 > outputLimit.length() || 60 >= outputLimit.length())
+
+		//regular token printout
+		if(60 >= outputLimit.length())//(66 > outputLimit.length() || 60 >= outputLimit.length()) //6 token buffer
 		{
 			//System.out.print("case3!!!!!");
-			System.out.print(foundToken.debugString() +" ");//+"outputlimit "+outputLimit);//+outputLimit.length());
+			System.out.print(foundToken.shortString());
+			//System.out.print(foundToken.shortString() + " ["+outputLimit.length()+"]");//+"outputlimit "+outputLimit);//+outputLimit.length());
 			prevError = false;
-
+			prevPrint = false;
+			return;
 		}
-		else
+		else	//create a newline
 		{
 			//System.out.print("case4!!!!!");
-			System.out.println(foundToken.debugString() +" ");
+			//System.out.print(" outputlimit is "+outputLimit.length());
+			System.out.print(foundToken.shortString());
+			System.out.println();
+			//System.out.println("\n\n");
+			//System.out.println("-----1-----2-----3-----4-----5-----6-----7-----8-----9-----10");
+			//System.out.println(outputLimit);
 			//reset the strings
 			outputLimit = "";	
 			prevError = false;
+			prevPrint = true;
+			return;
 		}
 	}
 

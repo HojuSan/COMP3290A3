@@ -14,25 +14,34 @@
 import java.io.*;
 import java.util.*;
 
-public class A1
+public class A3
 {
 	public static void main(String args[])  throws IOException
 	{
+		//input setup
 		File file = new File(args[0]);									//adds file
 		PrintWriter pw = new PrintWriter(System.out);					//Prints formatted representations of objects to a text-output stream
 		StringBuffer sb = new StringBuffer("");							//a string that can be modified
 		BufferedReader br = new BufferedReader(new FileReader(file));	//read char by char
 		OutputController output = new OutputController(br, pw, sb);
-		Scanner scan = new Scanner(output);
 
-		Token temp;
+//		//A1-A2 output
+//		Scanner scan = new Scanner(output);
+//
+//		Token temp;
+//		
+//		//currently not sure how things will print
+//		while(true != scan.isEOF())
+//		{
+//			scan.nextToken();
+//		}
 		
-		//currently not sure how things will print
-		while(true != scan.isEOF())
-		{
-			scan.nextToken();
-		}
-		
+		//A3 Output
+		Parser parser  = new Parser(output);
+		TreeNode.printTree(System.out, parser.program());
+		System.out.println();
+		pw.close();
+
 		//System.out.println("token num " + scan.getTokenNum());
 		System.out.println();
 		//pw.close();														//prints/flushes the rest out
