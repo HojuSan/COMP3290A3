@@ -225,7 +225,7 @@ public class Scanner
                     {
                         currentState = State.START;
                         //Remove initial quotation mark from the string buffer
-                        buffer = buffer.substring(1);
+                        buffer = '"'+buffer.substring(1)+'"';
                         foundToken = new Token(Token.TSTRG, CR, CP, buffer);
                         buffer = "";
                     }
@@ -554,7 +554,6 @@ public class Scanner
 		//concatenate string
 		outputLimit += (foundToken.debugString() +" ");
 
-
 		debugPrint(foundToken, prevError);
 
 		tokenNum++;
@@ -569,7 +568,8 @@ public class Scanner
 		if(foundToken.value() == 62 && prevError == true)
 		{
 			//System.out.print("case1!!!!!");
-			System.out.println("TUNDF" +" ");
+			//if i add a \n to TUNDF it just adds extra space
+			System.out.println("\nTUNDF" +" ");
 			System.out.println("lexical error "+foundToken.getStr());
 			outputLimit = "";
 		}

@@ -29,3 +29,8 @@ abc"unclosed
 !!
 !1
 !@!!= !!!!!= !!!!!=
+abc"unclosed
+abc"unclosed
+!!!!!=
+abc"unclosed
+
