@@ -51,7 +51,7 @@ public class Scanner
 		if(debug == true){System.out.println("scanner");}
     }
 
-	public void nextToken() throws IOException
+	public Token nextToken() throws IOException
     {
 		boolean prevError = false;
         Token foundToken = null;
@@ -558,13 +558,13 @@ public class Scanner
         }
 
 		//concatenate string
-		outputLimit += (foundToken.shortString());
-
-		debugPrint(foundToken, prevError);
-
+		if(debug == true){outputLimit += (foundToken.shortString());}
+		if(debug == true){debugPrint(foundToken, prevError);}
 		tokenNum++;
 		if(debug == true){System.out.println("end of a loop");}
-        //return foundToken;
+
+		//parser version
+        return foundToken;
 	}
 	
 	public void debugPrint(Token foundToken, boolean prevError)

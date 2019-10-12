@@ -38,11 +38,10 @@ public class A3
 		
 		//A3 Output
 		Parser parser  = new Parser(output);
-		TreeNode.printTree(System.out, parser.program());
+		TreeNode.printTree(pw, parser.program());
 		System.out.println();
 		pw.close();
 
-		//System.out.println("token num " + scan.getTokenNum());
 		System.out.println();
 		//pw.close();														//prints/flushes the rest out
 	}
