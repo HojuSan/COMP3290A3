@@ -1,3 +1,11 @@
+//* File:                       TreeNode.java
+// * Course:                    COMP3290
+//  * Assignment:               Assignment3
+//   * Name:                    Juyong Kim  
+//    * Student Number:         c3244203
+//     * Purpose:               Treenode
+//      * Note:                 Look Below
+
 //	COMP3290 CD19 Compiler
 //		Syntax Tree Node Class - Builds a syntax tree node
 //

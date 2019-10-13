@@ -3,28 +3,32 @@
 //  * Assignment:               Assignment3
 //   * Name:                    Juyong Kim  
 //    * Student Number:         c3244203
-//     * Purpose:               Symbol Table
-//      * Note:                 Look Below
+//     * Purpose:               Symbol Table saves the STREC stuff in a hashmap
+//      * Note:                 null
 
 import java.util.*;
 
 public class SymbolTable
 {
+	//variables
 	private HashMap<String, StRec> table;
 	protected SymbolTable prev;
 
-	public SymbolTable (SymbolTable prev)
+	//constructor
+	public SymbolTable(SymbolTable prev)
 	{
 		table = new HashMap<>();
 		this.prev = prev;
 	}
 
-	public void put (String s, StRec sym)
+	//setters
+	public void put(String s, StRec sym)
 	{
 		table.put(s, sym);
 	}
 
-	public StRec get (String s)
+	//getters
+	public StRec get(String s)
 	{
 		for (SymbolTable e = this; e != null; e = e.prev)
 		{

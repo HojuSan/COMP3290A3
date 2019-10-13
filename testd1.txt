@@ -10,23 +10,18 @@ CD19 testd1
 
 main
 
-/--instantiated variables
-    x : real,
-    y : real,
-    z : real
+x : real,
+y : real,
+z : real
 
-/--main function
-    begin
+begin
 
-/--set variables
-        x = 1 ;
-        y = 2 ;
-/--do the actual function
-        x+y = z ;
+/--    x = 1 ;
+/--    y = 2 ;
+/--    x+y = z ;
+/--
+/--    printline z ;
 
-/--print result
-        printline z ;
-
-    end
+end
 
 CD19 testd1

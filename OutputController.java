@@ -67,11 +67,20 @@ public class OutputController
 			{
 				listing.println(currentLine);
 				listing.println("Errors found: " + errorCount);
+				listing.println();
+				listing.println(errors);
+				listing.println();
+				listing.println("Preorder Traversal before error:");
+				listing.println();
 			}
 			else
 			{
 				listing.println(currentLine);
-				listing.println("Scanner has finished");
+				listing.println();
+				listing.println("Parser has finished");
+				listing.println();
+				listing.println("Preorder Traversal:");
+				listing.println();
 			}		
 		}
 		else
@@ -101,13 +110,16 @@ public class OutputController
 
 	public void setError(String msg) 			
 	{				
+		String errorLinePrint = " At Line " + Integer.toString(line) + ": ";
+
 		if (!errorLine.equals("")) 
 		{
 			errorLine += "\n";				// terminate line for previous error message
 		}
-		errorLine += msg;
+
+		errorLine += errorLinePrint + msg;
 		errorCount++;
-		listing.println(errorLine);			//print the error above
+		//listing.println(errorLine);			//print the error above
 		errors.append(currentLine + "\n");
 		errors.append(errorLine + "\n");
 		errorLine = "";						// reset error message

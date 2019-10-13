@@ -1,6 +1,6 @@
-//* File:                       A1.java
+//* File:                       A3.java
 // * Course:                    COMP2240
-//  * Assignment:               Assignment1
+//  * Assignment:               Assignment3
 //   * Name:                    Juyong Kim  
 //    * Student Number:         c3244203
 //     * Purpose:               Main file
@@ -41,8 +41,5 @@ public class A3
 		TreeNode.printTree(pw, parser.program());
 		System.out.println();
 		pw.close();
-
-		System.out.println();
-		//pw.close();														//prints/flushes the rest out
 	}
 }

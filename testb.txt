@@ -6,7 +6,7 @@
 
 CD19 HelloWorld
 main
-        s : string
+        s : 
     
 begin
 

@@ -5,9 +5,9 @@
 //    * Student Number:         c3244203
 //     * Purpose:               the lexical analyzer converts a sequence of characters into a sequence of 
 //      *                       distinct keywords, identifiers, constants, and delimiters.
-//       * Note:                Just SCANS doesn't do syntactic processing
-//		  *						In computer science, an integer literal is a kind of literal for an integer 
-//		   *					whose value is directly represented in source code.
+//       * Note:                previous errors have been fixed within the scanner, but since 
+//		  *						printing style has changed, not sure if the changes will appear within
+//		   *					the parser
 
 import java.io.*;
 import java.util.*;

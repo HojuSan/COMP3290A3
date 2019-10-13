@@ -4,7 +4,9 @@
 //   * Name:                    Juyong Kim  
 //    * Student Number:         c3244203
 //     * Purpose:               parser
-//      * Note:                 Look Below
+//      * Note:                 certain errors should just close the program by returning null
+//       * 						however certain circumstances lead to weird errors, not enought time to fix them up though
+//		  *						using tails to fix left recursion
 
 import java.io.*;
 import java.util.*;
@@ -25,13 +27,16 @@ public class Parser
 		symbolTable = new SymbolTable(null);
 	}
 
+	//main parts of the tree, global, functions, mainbody
+
+	//program instantiates the tree and the requirements
 	public TreeNode program() throws IOException
 	{
 		String error = "Invalid program structure.";
 		TreeNode node = new TreeNode(TreeNode.NPROG);
 		StRec stRec = new StRec();
 		
-		//Check for CD19 token
+		//Checks for the cd19 token
 		currentToken = scanner.nextToken();
 		lookahead = scanner.nextToken();
 
@@ -41,20 +46,26 @@ public class Parser
 			return null;
 		}
 
-		//Check for Identifier token
+		//checks for the identifier token
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
-		if (!checkToken(Token.TIDEN, error)) return null;
+		if (!checkToken(Token.TIDEN, error))
+		{
+			System.out.println("returning null");
+			return null;
+		} 
 		stRec.setName(currentToken.getStr());
 
-		//Consume token
+		//uses the token then moves to the next
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
-		//Add to symbol table
+		//adds the new requirement to the symbol table,
 		node.setSymbol(stRec);
 		symbolTable.put(stRec.getName(), stRec);
 
+		//setting the nodes within the tree
+		//learning linkedlists and nodes was useful
 		node.setLeft(globals());
 		node.setMiddle(funcs());
 		node.setRight(mainbody());
@@ -62,7 +73,7 @@ public class Parser
 		return node;
 	}
 	
-	
+	//Globals, set to the left side
 	private TreeNode globals() throws IOException
 	{
 		TreeNode node = new TreeNode(TreeNode.NGLOB);
@@ -70,6 +81,97 @@ public class Parser
 		node.setLeft(consts());
 		node.setMiddle(types());
 		node.setRight(arrays());
+
+		//if there is nothing just don't return it
+		if(node.getLeft() == null && node.getRight() == null && node.getMiddle() == null)
+		{
+			return null;
+		}
+
+		return node;
+	}
+
+	//functions set into the middle
+	private TreeNode funcs() throws IOException
+	{
+		TreeNode node = new TreeNode(TreeNode.NFUNCS);
+
+		//if there is nothing just don't return it
+		if (currentToken.value() != Token.TFUNC)
+		{
+			return null;
+		}
+
+		node.setLeft(func());
+		node.setRight(funcs());
+
+		return node;
+	}
+
+	//and the mainbody is on the right side of the tree
+	//if the main statments within the txt does not exist just returns null and 
+	//shuts down the parser, not sure if works to the specs but i think that
+	//is how it should be
+	private TreeNode mainbody() throws IOException 
+	{
+		String error = "Invalid mainbody format.";
+		TreeNode node = new TreeNode(TreeNode.NMAIN);
+
+		//checks for the main token
+		if (!checkToken(Token.TMAIN, error))
+		{
+			return null;
+		}
+
+		currentToken = lookahead;
+		lookahead = scanner.nextToken();
+
+		//Enters left node
+		node.setLeft(slist());
+
+		//checks for the begin token
+		if (!checkToken(Token.TBEGN, error))
+		{
+			return null;
+		}
+
+		currentToken = lookahead;
+		lookahead = scanner.nextToken();
+		
+		//Enters right node
+		node.setRight(stats());
+
+		//Checks for end token
+		if (!checkToken(Token.TEND, error))
+		{
+			return null;
+		}
+
+		currentToken = lookahead;
+		lookahead = scanner.nextToken();
+
+		//Checks for CD19 token
+		if (!checkToken(Token.TCD19, error))
+		{
+			return null;
+		}
+
+		currentToken = lookahead;
+		lookahead = scanner.nextToken();
+
+		//Check for identifier token
+		if (!checkToken(Token.TIDEN, error))
+		{
+			return null;
+		}
+		
+		//Check for EOF token
+		currentToken = lookahead;
+
+		if (!checkToken(Token.TEOF, error))
+		{
+			return null;
+		}
 
 		return node;
 	}
@@ -111,20 +213,27 @@ public class Parser
 		return node;
 	}
 
+	//<init> ::= <id> = <expr>
 	private TreeNode init() throws IOException
 	{
-		String error = "Invalid constant initialisation.";
+		String error = "Wrong Initialisation Constant";
 		TreeNode node = new TreeNode(TreeNode.NINIT);
 		StRec stRec = new StRec();
 
-		//Check for identifier
-		if (!checkToken(Token.TIDEN, error)) return null;
+		//check identifier
+		if (!checkToken(Token.TIDEN, error))
+		{
+			return null;
+		}
 		stRec.setName(currentToken.getStr());
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
-		//Check for equals token
-		if (!checkToken(Token.TEQUL, error)) return null;
+		//check equals token
+		if (!checkToken(Token.TEQUL, error)) 
+		{
+			return null;
+		}
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
@@ -135,6 +244,7 @@ public class Parser
 		return node;
 	}
 
+	//<types> ::= types <typelist> | ε
 	private TreeNode types() throws IOException
 	{
 		if (currentToken.value() != Token.TTYPS)
@@ -149,6 +259,7 @@ public class Parser
 		return typelist();
 	}
 
+	//<arrays> ::= arrays <arrdecls> | ε
 	private TreeNode arrays() throws IOException
 	{
 		if (currentToken.value() != Token.TARRS)
@@ -163,57 +274,105 @@ public class Parser
 		return arrdecls();
 	}
 
-
-	private TreeNode funcs() throws IOException
+	//<funcs> ::= <func> <funcs> | ε
+	private TreeNode func() throws IOException
 	{
-		TreeNode node = new TreeNode(TreeNode.NFUNCS);
-		if (currentToken.value() != Token.TFUNC)
+		String error = "Invalid func declaration";
+		TreeNode node = new TreeNode(TreeNode.NFUND);
+		StRec stRec = new StRec();
+
+		//Check for func token
+		if (!checkToken(Token.TFUNC, error))  
 		{
 			return null;
 		}
-
-		node.setLeft(func());
-		node.setRight(funcs());
-
-		return node;
-	}
-
-	private TreeNode mainbody() throws IOException 
-	{
-		String error = "Invalid mainbody structure.";
-		TreeNode node = new TreeNode(TreeNode.NMAIN);
-		//Check for main token
-		if (!checkToken(Token.TMAIN, error)) return null;
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
-		//Enter left node
-		node.setLeft(slist());
+		//Check for identifier
+		if (!checkToken(Token.TIDEN, error))  
+		{
+			return null;
+		}
+		stRec.setName(currentToken.getStr());
+		currentToken = lookahead;
+		lookahead = scanner.nextToken();
+
+		//Check for left paranthesis token
+		if (!checkToken(Token.TLPAR, error)) 
+		{
+			return null;
+		}
+		currentToken = lookahead;
+		lookahead = scanner.nextToken();
+
+		node.setLeft(plist());
+
+		//Check for right paranthesis token
+		if (!checkToken(Token.TRPAR, error))  
+		{
+			return null;
+		}
+		currentToken = lookahead;
+		lookahead = scanner.nextToken();
+
+		//Check for colon token
+		if (!checkToken(Token.TCOLN, error))  
+		{
+			return null;
+		}
+		currentToken = lookahead;
+		lookahead = scanner.nextToken();
+
+		//Check for rtype
+		if (currentToken.value() == Token.TINTG)
+		{
+			stRec.setType("integer");
+		}
+		else if (currentToken.value() == Token.TREAL)
+		{
+			stRec.setType("real");
+		}
+		else if (currentToken.value() == Token.TBOOL)
+		{
+			stRec.setType("boolean");
+		}
+		else if (currentToken.value() == Token.TVOID)  
+		{
+			stRec.setType("void");
+		}
+		else
+		{
+			if (!checkToken(Token.TINTG, error))  
+			{
+				return null;
+			}
+		}
+		currentToken = lookahead;
+		lookahead = scanner.nextToken();
+
+		node.setMiddle(locals());
 
 		//Check for begin token
-		if (!checkToken(Token.TBEGN, error)) return null;
+		if (!checkToken(Token.TBEGN, error))  
+		{
+			return null;
+		}
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
-		
-		//Enter right node
+
 		node.setRight(stats());
 
 		//Check for end token
-		if (!checkToken(Token.TEND, error)) return null;
+		if (!checkToken(Token.TEND, error))  
+		{
+			return null;
+		}
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
-		//Check for CD18 token
-		if (!checkToken(Token.TCD19, error)) return null;
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
-
-		//Check for identifier token
-		if (!checkToken(Token.TIDEN, error)) return null;
-		
-		//Check for EOF token
-		currentToken = lookahead;
-		if (!checkToken(Token.TEOF, error)) return null;
+		node.setSymbol(stRec);
+		symbolTable.put(stRec.getName(), stRec);
 
 		return node;
 	}
@@ -262,7 +421,10 @@ public class Parser
 		StRec stRec = new StRec();
 
 		//Check for identifier token
-		if (!checkToken(Token.TIDEN, error)) return null;
+		if (!checkToken(Token.TIDEN, error))
+		{
+			return null;
+		}
 		stRec.setName(currentToken.getStr());
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
@@ -270,7 +432,10 @@ public class Parser
 		node.setSymbol(stRec);
 
 		//Check for IS token
-		if (!checkToken(Token.TIS, error)) return null;
+		if (!checkToken(Token.TIS, error))
+		{
+			return null;
+		}
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
@@ -280,7 +445,10 @@ public class Parser
 			node.setValue(TreeNode.NRTYPE);
 			node.setLeft(fields());
 			//Check for end token
-			if (!checkToken(Token.TEND, error)) return null;
+			if (!checkToken(Token.TEND, error))
+			{
+				return null;
+			}
 			currentToken = lookahead;
 			lookahead = scanner.nextToken();
 			stRec.setType("Struct");
@@ -292,24 +460,36 @@ public class Parser
 		lookahead = scanner.nextToken();
 
 		//Check for right bracket token
-		if (!checkToken(Token.TLBRK, error)) return null;
+		if (!checkToken(Token.TLBRK, error))
+		{
+			return null;
+		}
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
 		node.setLeft(expr());
 
 		//Check for left bracket token
-		if (!checkToken(Token.TRBRK, error)) return null;
+		if (!checkToken(Token.TRBRK, error))
+		{
+			return null;
+		}
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
 		//Check for of token
-		if (!checkToken(Token.TOF, error)) return null;
+		if (!checkToken(Token.TOF, error))
+		{
+			return null;
+		}
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
 		//Check for identifier token
-		if (!checkToken(Token.TIDEN, error)) return null;
+		if (!checkToken(Token.TIDEN, error))
+		{
+			return null;
+		}
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
@@ -344,13 +524,19 @@ public class Parser
 		StRec stRec = new StRec();
 		
 		//Check for identifier token
-		if (!checkToken(Token.TIDEN, error)) return null;
+		if (!checkToken(Token.TIDEN, error+" A")) 
+		{
+			return null;
+		}
 		stRec.setName(currentToken.getStr());
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
 		//Check for colon token
-		if (!checkToken(Token.TCOLN, error)) return null;
+		if (!checkToken(Token.TCOLN, error+" b")) 
+		{
+			return null;
+		}
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
@@ -370,7 +556,10 @@ public class Parser
 		}
 		else
 		{
-			if (!checkToken(Token.TINTG, error)) return null;
+			if (!checkToken(Token.TINTG, error+" c")) 
+			{
+				return null;
+			}
 		}
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
@@ -407,96 +596,27 @@ public class Parser
 		StRec stRec = new StRec();
 
 		//Check for identifier
-		if (!checkToken(Token.TIDEN, error)) return null;
+		if (!checkToken(Token.TIDEN, error))  
+		{
+			return null;
+		}
 		stRec.setName(currentToken.getStr());
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
 		//Check for colon token
-		if (!checkToken(Token.TCOLN, error)) return null;
+		if (!checkToken(Token.TCOLN, error))  
+		{
+			return null;
+		}
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
-		if (!checkToken(Token.TIDEN, error)) return null;
+		if (!checkToken(Token.TIDEN, error))  
+		{
+			return null;
+		}
 		stRec.setType(currentToken.getStr());
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
-
-		node.setSymbol(stRec);
-		symbolTable.put(stRec.getName(), stRec);
-
-		return node;
-	}
-
-	private TreeNode func() throws IOException
-	{
-		String error = "Invalid func declaration";
-		TreeNode node = new TreeNode(TreeNode.NFUND);
-		StRec stRec = new StRec();
-
-		//Check for func token
-		if (!checkToken(Token.TFUNC, error)) return null;
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
-
-		//Check for identifier
-		if (!checkToken(Token.TIDEN, error)) return null;
-		stRec.setName(currentToken.getStr());
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
-
-		//Check for left paranthesis token
-		if (!checkToken(Token.TLPAR, error)) return null;
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
-
-		node.setLeft(plist());
-
-		//Check for right paranthesis token
-		if (!checkToken(Token.TRPAR, error)) return null;
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
-
-		//Check for colon token
-		if (!checkToken(Token.TCOLN, error)) return null;
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
-
-		//Check for rtype
-		if (currentToken.value() == Token.TINTG)
-		{
-			stRec.setType("integer");
-		}
-		else if (currentToken.value() == Token.TREAL)
-		{
-			stRec.setType("real");
-		}
-		else if (currentToken.value() == Token.TBOOL)
-		{
-			stRec.setType("boolean");
-		}
-		else if (currentToken.value() == Token.TVOID)  
-		{
-			stRec.setType("void");
-		}
-		else
-		{
-			if (!checkToken(Token.TINTG, error)) return null;
-		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
-
-		node.setMiddle(locals());
-
-		//Check for begin token
-		if (!checkToken(Token.TBEGN, error)) return null;
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
-
-		node.setRight(stats());
-
-		//Check for end token
-		if (!checkToken(Token.TEND, error)) return null;
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
@@ -605,13 +725,19 @@ public class Parser
 		StRec stRec = new StRec();
 
 		//Check for identifier token
-		if (!checkToken(Token.TIDEN, error)) return null;
+		if (!checkToken(Token.TIDEN, error)) 
+		{
+			return null;
+		}
 		stRec.setName(currentToken.getStr());
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
 		//Check for colon token
-		if (!checkToken(Token.TCOLN, error)) return null;
+		if (!checkToken(Token.TCOLN, error)) 
+		{
+			return null;
+		}
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
@@ -638,7 +764,10 @@ public class Parser
 		}
 		else
 		{
-			if (!checkToken(Token.TINTG, error)) return null;
+			if (!checkToken(Token.TINTG, error)) 
+			{
+				return null;
+			}
 		}
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
@@ -652,7 +781,8 @@ public class Parser
 	{
 		String error = "Invalid statements declaration.";
 		//First non-terminal values expectede
-		int first[] = {
+		int first[] = 
+		{
 			Token.TREPT, Token.TIDEN, Token.TINPT, Token.TPRIN, Token.TPRLN, Token.TRETN, Token.TFOR, Token.TIFTH
 		};
 
@@ -681,7 +811,11 @@ public class Parser
 		{
 			temp = stat();
 			//Check for semicolon token
-			if (!checkToken(Token.TSEMI, error + currentToken.getStr())) return null;
+			if (!checkToken(Token.TSEMI, error + currentToken.getStr()))
+			{
+				return null;
+			}
+
 			currentToken = lookahead;
 			lookahead = scanner.nextToken();
 
@@ -732,7 +866,10 @@ public class Parser
 		}
 		else
 		{
-			if (!checkToken(Token.TIDEN, error)) return null;
+			if (!checkToken(Token.TIDEN, error)) 
+			{
+				return null;
+			}
 			if (lookahead.value() == Token.TLPAR)
 			{
 				return callstat();
@@ -749,33 +886,48 @@ public class Parser
 		String error = "Invalid For structure.";
 		TreeNode node = new TreeNode(TreeNode.NFOR);
 		//Check for For token
-		if (!checkToken(Token.TFOR, error)) return null;
+		if (!checkToken(Token.TFOR, error))
+		{
+			return null;
+		}
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
 		//Check for left paranthesis
-		if (!checkToken(Token.TLPAR, error)) return null;
+		if (!checkToken(Token.TLPAR, error)) 
+		{
+			return null;
+		}
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
 		node.setLeft(asgnlist());
 
 		//Check for semicolon token
-		if (!checkToken(Token.TSEMI, error)) return null;
+		if (!checkToken(Token.TSEMI, error))
+		{
+			return null;
+		}
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
 		node.setMiddle(bool());
 
 		//Check for right paranthesis
-		if (!checkToken(Token.TRPAR, error)) return null;
+		if (!checkToken(Token.TRPAR, error))
+		{
+			return null;
+		}
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
 		node.setRight(stats());
 
 		//Check for end
-		if (!checkToken(Token.TEND, error)) return null;
+		if (!checkToken(Token.TEND, error)) 
+		{
+			return null;
+		}
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
@@ -788,26 +940,38 @@ public class Parser
 		TreeNode node = new TreeNode(TreeNode.NREPT);
 
 		//Check for repeat token
-		if (!checkToken(Token.TREPT, error)) return null;
+		if (!checkToken(Token.TREPT, error))
+		{
+			return null;
+		}
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
 		//Check for left paranthesis
-		if (!checkToken(Token.TLPAR, error)) return null;
+		if (!checkToken(Token.TLPAR, error)) 
+		{
+			return null;
+		}
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
 		node.setLeft(asgnlist());
 
 		//Check for right paranthesis
-		if (!checkToken(Token.TRPAR, error)) return null;
+		if (!checkToken(Token.TRPAR, error)) 
+		{
+			return null;
+		}
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
 		node.setMiddle(stats());
 
 		//Check for until
-		if (!checkToken(Token.TUNTL, error)) return null;
+		if (!checkToken(Token.TUNTL, error))
+		{
+			return null;
+		}
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
@@ -851,19 +1015,27 @@ public class Parser
 		//Undefined tree node until proper selection
 		TreeNode node = new TreeNode(TreeNode.NUNDEF);
 		//Check for IF token
-		if (!checkToken(Token.TIFTH, error)) return null;
-		currentToken = lookahead;
+		if (!checkToken(Token.TIFTH, error)) 
+		{
+			return null;
+		}
 		lookahead = scanner.nextToken();
 
 		//Check for left paranthesis
-		if (!checkToken(Token.TLPAR, error)) return null;
+		if (!checkToken(Token.TLPAR, error)) 
+		{
+			return null;
+		}
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
 		node.setLeft(bool());
 
 		//Check for right paranthesis
-		if (!checkToken(Token.TRPAR, error)) return null;
+		if (!checkToken(Token.TRPAR, error))
+		{
+			return null;
+		}
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
@@ -882,14 +1054,20 @@ public class Parser
 		else
 		{
 			//Check for else
-			if (!checkToken(Token.TELSE, error)) return null;
+			if (!checkToken(Token.TELSE, error)) 
+			{
+				return null;
+			}
 			currentToken = lookahead;
 			lookahead = scanner.nextToken();
 
 			node.setRight(stats());
 
 			//Check for end
-			if (!checkToken(Token.TEND, error)) return null;
+			if (!checkToken(Token.TEND, error))
+			{
+				return null;
+			}
 			currentToken = lookahead;
 			lookahead = scanner.nextToken();
 
@@ -934,17 +1112,17 @@ public class Parser
 			lookahead = scanner.nextToken();
 			node.setValue(TreeNode.NMNEQ);
 		}
-		else if (currentToken.value() == Token.TSTEQ)
-		{
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
-			node.setValue(TreeNode.NSTEQ);
-		}
 		else if (currentToken.value() == Token.TDVEQ)
 		{
 			currentToken = lookahead;
 			lookahead = scanner.nextToken();
 			node.setValue(TreeNode.NDVEQ);
+		}
+		else if (currentToken.value() == Token.TSTEQ)
+		{
+			currentToken = lookahead;
+			lookahead = scanner.nextToken();
+			node.setValue(TreeNode.NSTEQ);
 		}
 		else
 		{
@@ -995,13 +1173,19 @@ public class Parser
 		StRec stRec = new StRec();
 
 		//Check for identifier token
-		if (!checkToken(Token.TIDEN, error)) return null;
+		if (!checkToken(Token.TIDEN, error)) 
+		{
+			return null;
+		}
 		stRec.setName(currentToken.getStr());
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
 		//Check for left paranthesis
-		if (!checkToken(Token.TLPAR, error)) return null;
+		if (!checkToken(Token.TLPAR, error)) 
+		{
+			return null;
+		}
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
@@ -1015,7 +1199,10 @@ public class Parser
 		{
 			node.setLeft(elist());
 			//Check for right paranthesis
-			if (!checkToken(Token.TRPAR, error)) return null;
+			if (!checkToken(Token.TRPAR, error)) 
+			{
+				return null;
+			}
 			currentToken = lookahead;
 			lookahead = scanner.nextToken();
 		}
@@ -1035,7 +1222,10 @@ public class Parser
 		TreeNode node = new TreeNode(TreeNode.NRETN);
 
 		//Check for return token
-		if (!checkToken(Token.TRETN, error)) return null;
+		if (!checkToken(Token.TRETN, error))
+		{
+			return null;
+		}
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
@@ -1070,12 +1260,13 @@ public class Parser
 		return node;
 	}
 
-
-
 	private TreeNode var() throws IOException
 	{
 		String error = "Invalid variable declaration.";
-		if (!checkToken(Token.TIDEN, error)) return null;
+		if (!checkToken(Token.TIDEN, error)) 
+		{
+			return null;
+		}
 		StRec stRec = new StRec(currentToken.getStr());
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
@@ -1091,17 +1282,25 @@ public class Parser
 			node.setLeft(expr());
 
 			//Check for right bracket token and consume
-			if (!checkToken(Token.TRBRK, error)) return null;
+			if (!checkToken(Token.TRBRK, error)) 
+			{
+				return null;
+			}
 			currentToken = lookahead;
 			lookahead = scanner.nextToken();
 
 			//Check for dot token
-			if (!checkToken(Token.TDOT, error)) return null;
-			currentToken = lookahead;
+			if (!checkToken(Token.TDOT, error)) 
+			{
+				return null;
+			}
 			lookahead = scanner.nextToken();
 
 			//Check for identifier token and consume
-			if (!checkToken(Token.TIDEN, error)) return null;
+			if (!checkToken(Token.TIDEN, error)) 
+			{
+				return null;
+			}
 			currentToken = lookahead;
 			lookahead = scanner.nextToken();
 
@@ -1139,6 +1338,7 @@ public class Parser
 		return node;
 	}
 
+	//<bool> ::= <bool><logop> <rel> | <rel>
 	private TreeNode bool() throws IOException
 	{
 		TreeNode temp;
@@ -1146,6 +1346,7 @@ public class Parser
 		return booltail(temp);
 	}
 
+	//properly coded in ll(1) format
 	private TreeNode booltail(TreeNode left) throws IOException
 	{
 		TreeNode parent;
@@ -1442,7 +1643,10 @@ public class Parser
 		else
 		{
 			//Check for left paranthesis token and consume
-			if (!checkToken(Token.TLPAR, error)) return null;
+			if (!checkToken(Token.TLPAR, error)) 
+			{
+				return null;
+			}
 			currentToken = lookahead;
 			lookahead = scanner.nextToken();
 
@@ -1450,7 +1654,10 @@ public class Parser
 			temp = bool();
 
 			//Check for right paranthesis token and consume
-			if (!checkToken(Token.TRPAR, error)) return null;
+			if (!checkToken(Token.TRPAR, error)) 
+			{
+				return null;
+			}
 			currentToken = lookahead;
 			lookahead = scanner.nextToken();
 
@@ -1465,13 +1672,19 @@ public class Parser
 		StRec stRec = new StRec();
 
 		//Check for identifier token
-		if (!checkToken(Token.TIDEN, error)) return null;
+		if (!checkToken(Token.TIDEN, error)) 
+		{
+			return null;
+		}
 		stRec.setName(currentToken.getStr());
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
 		//Check for left paranthesis token
-		if (!checkToken(Token.TLPAR, error)) return null;
+		if (!checkToken(Token.TLPAR, error)) 
+		{
+			return null;
+		}
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
@@ -1481,7 +1694,10 @@ public class Parser
 		}
 
 		//Check for right paranthesis token
-		if (!checkToken(Token.TRPAR, error)) return null;
+		if (!checkToken(Token.TRPAR, error))
+		{
+			return null;
+		}
 		currentToken = lookahead;
 		lookahead = scanner.nextToken();
 
@@ -1526,7 +1742,7 @@ public class Parser
 		}
 	}
 
-	//checks if the token 
+	//Prints the appropriate error message 
 	private boolean checkToken(int expected, String message)
 	{
 		//System.out.println("bingo1");										//bingos were used for debugging purposes
