@@ -15,7 +15,7 @@ public class Parser
 {
 	private Scanner scanner;				//Compiler Scanner reference for token stream
 	private Token currentToken;				//Current Token being analysed
-	private Token lookahead;				//Lookahead toekn for LL(1)
+	private Token lookAhead;				//Lookahead toekn for LL(1)
 	private OutputController outPut;		//Output controller reference
 	private SymbolTable symbolTable;
 
@@ -30,6 +30,7 @@ public class Parser
 	//main parts of the tree, global, functions, mainbody
 
 	//program instantiates the tree and the requirements
+	//<program>     ::=  CD19 <id> <consts> <types> <arrays> <funcs> <mainbody>
 	public TreeNode program() throws IOException
 	{
 		String error = "Invalid program structure.";
@@ -38,7 +39,7 @@ public class Parser
 		
 		//Checks for the cd19 token
 		currentToken = scanner.nextToken();
-		lookahead = scanner.nextToken();
+		lookAhead = scanner.nextToken();
 
 		if (!checkToken(Token.TCD19, error)) 
 		{
@@ -47,8 +48,8 @@ public class Parser
 		}
 
 		//checks for the identifier token
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 		if (!checkToken(Token.TIDEN, error))
 		{
 			System.out.println("returning null");
@@ -57,8 +58,8 @@ public class Parser
 		stRec.setName(currentToken.getStr());
 
 		//uses the token then moves to the next
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		//adds the new requirement to the symbol table,
 		node.setSymbol(stRec);
@@ -91,7 +92,108 @@ public class Parser
 		return node;
 	}
 
+	//<consts>      ::=  constants <initlist> | ε
+	private TreeNode consts() throws IOException
+	{
+		if (currentToken.value() != Token.TCONS)
+		{
+			return null;
+		}
+		//Consume token
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
+
+		return initlist();
+	}
+
+	//<initlist>    ::=  <init> | <init> , <initlist>
+	private TreeNode initlist() throws IOException
+	{
+		TreeNode node = new TreeNode(TreeNode.NILIST);
+		TreeNode inn = init();
+
+		//<init>
+		if (currentToken.value() != Token.TCOMA)
+		{
+			return inn;
+		}
+		
+		//<init> , <initlist>
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
+
+		node.setLeft(inn);
+
+		node.setRight(initlist());
+
+		return node;
+	}
+
+	//<init> ::= <id> = <expr>
+	private TreeNode init() throws IOException
+	{
+		String error = "Invalid Initialisation Constant";
+		TreeNode node = new TreeNode(TreeNode.NINIT);
+		StRec stRec = new StRec();
+
+		//check identifier
+		if (!checkToken(Token.TIDEN, error))
+		{
+			return null;
+		}
+
+		stRec.setName(currentToken.getStr());
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
+
+		//check equals token
+		if (!checkToken(Token.TEQUL, error)) 
+		{
+			return null;
+		}
+		
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
+
+		node.setLeft(expr());
+		node.setSymbol(stRec);
+		symbolTable.put(stRec.getName(), stRec);
+
+		return node;
+	}
+
+	//<types> ::= types <typelist> | ε
+	private TreeNode types() throws IOException
+	{
+		if (currentToken.value() != Token.TTYPS)
+		{
+			return null;
+		}
+
+		//Consume token
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
+
+		return typelist();
+	}
+
+	//<arrays> ::= arrays <arrdecls> | ε
+	private TreeNode arrays() throws IOException
+	{
+		if (currentToken.value() != Token.TARRS)
+		{
+			return null;
+		}
+
+		//Consume token
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
+
+		return arrdecls();
+	}	
+
 	//functions set into the middle
+	//<funcs>       ::=  <func> <funcs> | ε
 	private TreeNode funcs() throws IOException
 	{
 		TreeNode node = new TreeNode(TreeNode.NFUNCS);
@@ -112,6 +214,7 @@ public class Parser
 	//if the main statments within the txt does not exist just returns null and 
 	//shuts down the parser, not sure if works to the specs but i think that
 	//is how it should be
+	//<mainbody>    ::=  main <slist> begin <stats> end CD19 <id>
 	private TreeNode mainbody() throws IOException 
 	{
 		String error = "Invalid mainbody format.";
@@ -123,8 +226,8 @@ public class Parser
 			return null;
 		}
 
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		//Enters left node
 		node.setLeft(slist());
@@ -135,8 +238,8 @@ public class Parser
 			return null;
 		}
 
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 		
 		//Enters right node
 		node.setRight(stats());
@@ -147,8 +250,8 @@ public class Parser
 			return null;
 		}
 
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		//Checks for CD19 token
 		if (!checkToken(Token.TCD19, error))
@@ -156,8 +259,8 @@ public class Parser
 			return null;
 		}
 
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		//Check for identifier token
 		if (!checkToken(Token.TIDEN, error))
@@ -166,7 +269,7 @@ public class Parser
 		}
 		
 		//Check for EOF token
-		currentToken = lookahead;
+		currentToken = lookAhead;
 
 		if (!checkToken(Token.TEOF, error))
 		{
@@ -176,118 +279,231 @@ public class Parser
 		return node;
 	}
 
-	//<consts>      ::=  constants <initlist> | ε
-	private TreeNode consts() throws IOException
-	{
-		if (currentToken.value() != Token.TCONS)
-		{
-			return null;
-		}
-		//Consume token
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+	//<slist>       ::=  <sdecl> | <sdecl> , <slist>
+	private TreeNode slist() throws IOException
+	{	
+		TreeNode node = new TreeNode(TreeNode.NSDLST);
+		//Enter left node
+		TreeNode sdecimal = sdecl();
 
-		return initlist();
-	}
-
-	//<initlist>    ::=  <init> | <init> , <initlist>
-	private TreeNode initlist() throws IOException
-	{
-		TreeNode node = new TreeNode(TreeNode.NILIST);
-		TreeNode inn = init();
-
-		//<init>
 		if (currentToken.value() != Token.TCOMA)
 		{
-			return inn;
+			return sdecimal;
 		}
-		
-		//<init> , <initlist>
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
 
-		node.setLeft(inn);
+		//consume token
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
-		node.setRight(initlist());
+		node.setLeft(sdecimal);
+		node.setRight(slist());
 
 		return node;
 	}
 
-	//<init> ::= <id> = <expr>
-	private TreeNode init() throws IOException
+	//<typelist>    ::=  <type> <typelist> | <type>
+	private TreeNode typelist() throws IOException
 	{
-		String error = "Wrong Initialisation Constant";
-		TreeNode node = new TreeNode(TreeNode.NINIT);
+		TreeNode node = new TreeNode(TreeNode.NTYPEL);
+
+		TreeNode typels = type();
+
+		if (currentToken.value() != Token.TIDEN)
+		{
+			return typels;
+		}
+
+		node.setLeft(typels);
+		node.setRight(typelist());
+		return node;
+	}
+
+	//<type>        ::=  <structid> is <fields> end
+	//<type>        ::=  <typeid> is array [ <expr> ] of <structid>
+	private TreeNode type() throws IOException
+	{
+		String error = "Invalid struct or array declaration.";
+		TreeNode node = new TreeNode(TreeNode.NUNDEF);
 		StRec stRec = new StRec();
 
-		//check identifier
+		//Check for identifier token
 		if (!checkToken(Token.TIDEN, error))
 		{
 			return null;
 		}
 		stRec.setName(currentToken.getStr());
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
-		//check equals token
-		if (!checkToken(Token.TEQUL, error)) 
+		node.setSymbol(stRec);
+
+		//Check for IS token
+		if (!checkToken(Token.TIS, error))
 		{
 			return null;
 		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
+
+		//Check if NRTYPE node
+		if (currentToken.value() != Token.TARAY)
+		{
+			node.setValue(TreeNode.NRTYPE);
+			node.setLeft(fields());
+			//Check for end token
+			if (!checkToken(Token.TEND, error))
+			{
+				return null;
+			}
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
+			stRec.setType("Struct");
+			symbolTable.put(stRec.getName(), stRec);
+			return node;
+		}
+		//Else NATYPE node
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
+
+		//Check for right bracket token
+		if (!checkToken(Token.TLBRK, error))
+		{
+			return null;
+		}
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		node.setLeft(expr());
-		node.setSymbol(stRec);
+
+		//Check for left bracket token
+		if (!checkToken(Token.TRBRK, error))
+		{
+			return null;
+		}
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
+
+		//Check for of token
+		if (!checkToken(Token.TOF, error))
+		{
+			return null;
+		}
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
+
+		//Check for identifier token
+		if (!checkToken(Token.TIDEN, error))
+		{
+			return null;
+		}
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
+
+		stRec.setType("Type");
 		symbolTable.put(stRec.getName(), stRec);
+		return node;
+	}
+	
+	//<fields>      ::=  <sdecl> | <sdecl> , <fields>
+	private TreeNode fields() throws IOException
+	{
+		TreeNode node = new TreeNode(TreeNode.NFLIST);
+		TreeNode sdecll = sdecl();
+
+		if (currentToken.value() != Token.TCOMA)
+		{
+			return sdecll;
+		}
+		//Consume token
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
+
+		node.setLeft(sdecll);
+		node.setRight(fields());
 
 		return node;
 	}
 
-	//<types> ::= types <typelist> | ε
-	private TreeNode types() throws IOException
+	//<sdecl>       ::=  <id> : <stype>
+	private TreeNode sdecl() throws IOException
 	{
-		if (currentToken.value() != Token.TTYPS)
-		{
-			return null;
-		}
-
-		//Consume token
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
-
-		return typelist();
-	}
-
-	//<arrays> ::= arrays <arrdecls> | ε
-	private TreeNode arrays() throws IOException
-	{
-		if (currentToken.value() != Token.TARRS)
-		{
-			return null;
-		}
-
-		//Consume token
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
-
-		return arrdecls();
-	}
-
-	//<funcs> ::= <func> <funcs> | ε
-	private TreeNode func() throws IOException
-	{
-		String error = "Invalid func declaration";
-		TreeNode node = new TreeNode(TreeNode.NFUND);
+		String error = "Invalid variable declaration.";
+		TreeNode node = new TreeNode(TreeNode.NSDECL);
 		StRec stRec = new StRec();
-
-		//Check for func token
-		if (!checkToken(Token.TFUNC, error))  
+		
+		//Check for identifier token
+		if (!checkToken(Token.TIDEN, error+" A")) 
 		{
 			return null;
 		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		stRec.setName(currentToken.getStr());
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
+
+		//Check for colon token
+		if (!checkToken(Token.TCOLN, error+" b")) 
+		{
+			return null;
+		}
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
+
+		//Check for integer|real|boolean token
+
+		if (currentToken.value() == Token.TINTG)
+		{
+			stRec.setType("integer");
+		}
+		else if (currentToken.value() == Token.TREAL)
+		{
+			stRec.setType("real");
+		}
+		else if (currentToken.value() == Token.TBOOL)
+		{
+			stRec.setType("boolean");
+		}
+		else
+		{
+			if (!checkToken(Token.TINTG, error+" c")) 
+			{
+				return null;
+			}
+		}
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
+
+		node.setSymbol(stRec);
+		symbolTable.put(stRec.getName(), stRec);
+		return node;
+	}
+
+	//<arrdecls>    ::=  <arrdecl> | <arrdecl> , <arrdecls>
+	private TreeNode arrdecls() throws IOException
+	{
+		TreeNode node = new TreeNode(TreeNode.NALIST);
+		TreeNode arrdecimals = arrdecl();
+
+		if (currentToken.value() != Token.TCOMA)
+		{
+			return arrdecimals;
+		}
+
+		//Consume token
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
+
+		node.setLeft(arrdecimals);
+		node.setRight(arrdecls());
+
+		return node;
+	}
+
+	//<arrdecl>     ::=  <id> : <typeid>
+	private TreeNode arrdecl() throws IOException
+	{
+		String error = "Invalid array declaration.";
+		TreeNode node = new TreeNode(TreeNode.NARRD);
+		StRec stRec = new StRec();
 
 		//Check for identifier
 		if (!checkToken(Token.TIDEN, error))  
@@ -295,16 +511,62 @@ public class Parser
 			return null;
 		}
 		stRec.setName(currentToken.getStr());
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
-		//Check for left paranthesis token
+		//Check for colon token
+		if (!checkToken(Token.TCOLN, error))  
+		{
+			return null;
+		}
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
+
+		if (!checkToken(Token.TIDEN, error))  
+		{
+			return null;
+		}
+		stRec.setType(currentToken.getStr());
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
+
+		node.setSymbol(stRec);
+		symbolTable.put(stRec.getName(), stRec);
+
+		return node;
+	}
+
+	//<funcs> ::= <func> <funcs> | ε
+	private TreeNode func() throws IOException
+	{
+		String error = "Invalid function declaration";
+		TreeNode node = new TreeNode(TreeNode.NFUND);
+		StRec stRec = new StRec();
+
+		//no func, returns null
+		if (!checkToken(Token.TFUNC, error))  
+		{
+			return null;
+		}
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
+
+		//no identifier returns null
+		if (!checkToken(Token.TIDEN, error))  
+		{
+			return null;
+		}
+		stRec.setName(currentToken.getStr());
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
+
+		//no left parenthesis, return null
 		if (!checkToken(Token.TLPAR, error)) 
 		{
 			return null;
 		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		node.setLeft(plist());
 
@@ -313,16 +575,16 @@ public class Parser
 		{
 			return null;
 		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		//Check for colon token
 		if (!checkToken(Token.TCOLN, error))  
 		{
 			return null;
 		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		//Check for rtype
 		if (currentToken.value() == Token.TINTG)
@@ -348,8 +610,8 @@ public class Parser
 				return null;
 			}
 		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		node.setMiddle(locals());
 
@@ -358,8 +620,8 @@ public class Parser
 		{
 			return null;
 		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		node.setRight(stats());
 
@@ -368,8 +630,8 @@ public class Parser
 		{
 			return null;
 		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		node.setSymbol(stRec);
 		symbolTable.put(stRec.getName(), stRec);
@@ -377,255 +639,7 @@ public class Parser
 		return node;
 	}
 
-	private TreeNode slist() throws IOException
-	{	
-		TreeNode node = new TreeNode(TreeNode.NSDLST);
-		//Enter left node
-		TreeNode sdecimal = sdecl();
-
-		if (currentToken.value() != Token.TCOMA)
-		{
-			return sdecimal;
-		}
-
-		//consume token
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
-
-		node.setLeft(sdecimal);
-		node.setRight(slist());
-
-		return node;
-	}
-
-	private TreeNode typelist() throws IOException
-	{
-		TreeNode node = new TreeNode(TreeNode.NTYPEL);
-
-		TreeNode typels = type();
-
-		if (currentToken.value() != Token.TIDEN)
-		{
-			return typels;
-		}
-
-		node.setLeft(typels);
-		node.setRight(typelist());
-		return node;
-	}
-
-	private TreeNode type() throws IOException
-	{
-		String error = "Invalid struct or array declaration.";
-		TreeNode node = new TreeNode(TreeNode.NUNDEF);
-		StRec stRec = new StRec();
-
-		//Check for identifier token
-		if (!checkToken(Token.TIDEN, error))
-		{
-			return null;
-		}
-		stRec.setName(currentToken.getStr());
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
-
-		node.setSymbol(stRec);
-
-		//Check for IS token
-		if (!checkToken(Token.TIS, error))
-		{
-			return null;
-		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
-
-		//Check if NRTYPE node
-		if (currentToken.value() != Token.TARAY)
-		{
-			node.setValue(TreeNode.NRTYPE);
-			node.setLeft(fields());
-			//Check for end token
-			if (!checkToken(Token.TEND, error))
-			{
-				return null;
-			}
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
-			stRec.setType("Struct");
-			symbolTable.put(stRec.getName(), stRec);
-			return node;
-		}
-		//Else NATYPE node
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
-
-		//Check for right bracket token
-		if (!checkToken(Token.TLBRK, error))
-		{
-			return null;
-		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
-
-		node.setLeft(expr());
-
-		//Check for left bracket token
-		if (!checkToken(Token.TRBRK, error))
-		{
-			return null;
-		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
-
-		//Check for of token
-		if (!checkToken(Token.TOF, error))
-		{
-			return null;
-		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
-
-		//Check for identifier token
-		if (!checkToken(Token.TIDEN, error))
-		{
-			return null;
-		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
-
-		stRec.setType("Type");
-		symbolTable.put(stRec.getName(), stRec);
-		return node;
-	}
-
-	private TreeNode fields() throws IOException
-	{
-		TreeNode node = new TreeNode(TreeNode.NFLIST);
-		TreeNode sdecll = sdecl();
-
-		if (currentToken.value() != Token.TCOMA)
-		{
-			return sdecll;
-		}
-		//Consume token
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
-
-		node.setLeft(sdecll);
-		node.setRight(fields());
-
-		return node;
-	}
-
-	private TreeNode sdecl() throws IOException
-	{
-		String error = "Invalid variable declaration.";
-		TreeNode node = new TreeNode(TreeNode.NSDECL);
-		StRec stRec = new StRec();
-		
-		//Check for identifier token
-		if (!checkToken(Token.TIDEN, error+" A")) 
-		{
-			return null;
-		}
-		stRec.setName(currentToken.getStr());
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
-
-		//Check for colon token
-		if (!checkToken(Token.TCOLN, error+" b")) 
-		{
-			return null;
-		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
-
-		//Check for integer|real|boolean token
-
-		if (currentToken.value() == Token.TINTG)
-		{
-			stRec.setType("integer");
-		}
-		else if (currentToken.value() == Token.TREAL)
-		{
-			stRec.setType("real");
-		}
-		else if (currentToken.value() == Token.TBOOL)
-		{
-			stRec.setType("boolean");
-		}
-		else
-		{
-			if (!checkToken(Token.TINTG, error+" c")) 
-			{
-				return null;
-			}
-		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
-
-		node.setSymbol(stRec);
-		symbolTable.put(stRec.getName(), stRec);
-		return node;
-	}
-
-	private TreeNode arrdecls() throws IOException
-	{
-		TreeNode node = new TreeNode(TreeNode.NALIST);
-		TreeNode arrdecimals = arrdecl();
-
-		if (currentToken.value() != Token.TCOMA)
-		{
-			return arrdecimals;
-		}
-
-		//Consume token
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
-
-		node.setLeft(arrdecimals);
-		node.setRight(arrdecls());
-
-		return node;
-	}
-
-	private TreeNode arrdecl() throws IOException
-	{
-		String error = "Invalid array declaration.";
-		TreeNode node = new TreeNode(TreeNode.NARRD);
-		StRec stRec = new StRec();
-
-		//Check for identifier
-		if (!checkToken(Token.TIDEN, error))  
-		{
-			return null;
-		}
-		stRec.setName(currentToken.getStr());
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
-
-		//Check for colon token
-		if (!checkToken(Token.TCOLN, error))  
-		{
-			return null;
-		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
-
-		if (!checkToken(Token.TIDEN, error))  
-		{
-			return null;
-		}
-		stRec.setType(currentToken.getStr());
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
-
-		node.setSymbol(stRec);
-		symbolTable.put(stRec.getName(), stRec);
-
-		return node;
-	}
-
+	//<plist>       ::=  <params> | ε
 	private TreeNode plist() throws IOException
 	{
 		if (currentToken.value() == Token.TIDEN || currentToken.value() == Token.TCONS)
@@ -638,6 +652,7 @@ public class Parser
 		}
 	}
 
+	//<params>      ::=  <param> , <params> | <param>
 	private	TreeNode params() throws IOException
 	{
 		TreeNode node = new TreeNode(TreeNode.NPLIST);
@@ -649,8 +664,8 @@ public class Parser
 		}
 
 		//Consume token
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		node.setLeft(parameter);
 		node.setRight(params());
@@ -658,14 +673,15 @@ public class Parser
 		return node;
 	}
 
+	//<param>       ::=  <sdecl> | <arrdecl> | const <arrdecl>
 	private TreeNode param() throws IOException
 	{
 		TreeNode node = new TreeNode(TreeNode.NUNDEF);
 		if (currentToken.value() == Token.TCONS)
 		{
 			//Consume token
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 
 			node.setValue(TreeNode.NARRC);
 			node.setLeft(arrdecl());
@@ -689,6 +705,10 @@ public class Parser
 		return node;
 	}
 
+	//<funcbody>    ::=  <locals> begin <stats> end
+	//being done elsewhere
+
+	//<locals>      ::=  <dlist> | ε
 	private TreeNode locals() throws IOException
 	{
 		if (currentToken.value() != Token.TIDEN)
@@ -699,6 +719,7 @@ public class Parser
 		return dlist();
 	}
 
+	//<dlist>       ::=  <decl> | <decl> , <dlist>
 	private TreeNode dlist() throws IOException
 	{
 		TreeNode node = new TreeNode(TreeNode.NDLIST);
@@ -709,8 +730,8 @@ public class Parser
 			return decimal;
 		}
 
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		node.setLeft(decimal);
 		node.setRight(dlist());
@@ -718,6 +739,7 @@ public class Parser
 		return node;
 	}
 
+	//<decl>        ::=  <sdecl> | <arrdecl>
 	private TreeNode decl() throws IOException
 	{
 		String error = "Invalid array or variable declaration.";
@@ -730,16 +752,16 @@ public class Parser
 			return null;
 		}
 		stRec.setName(currentToken.getStr());
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		//Check for colon token
 		if (!checkToken(Token.TCOLN, error)) 
 		{
 			return null;
 		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		//Check for rtype
 		if (currentToken.value() == Token.TINTG)
@@ -769,14 +791,17 @@ public class Parser
 				return null;
 			}
 		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 		node.setSymbol(stRec);
 		symbolTable.put(stRec.getName(), stRec);
 
 		return node;
 	}
 
+	//<stype>       ::=  integer | real | boolean
+
+	//<stats>       ::=  <stat> ; <stats> | <strstat> <stats> | <stat>; | <strstat>
 	private TreeNode stats() throws IOException
 	{
 		String error = "Invalid statements declaration.";
@@ -816,8 +841,8 @@ public class Parser
 				return null;
 			}
 
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 
 			//Check if next node is stats or empty string
 			for (int i = 0; i < first.length; i++)
@@ -833,6 +858,7 @@ public class Parser
 		}
 	}
 
+	//<strstat>     ::=  <forstat> | <ifstat>
 	private TreeNode strstat() throws IOException
 	{	
 		//Check for "if" or "for"
@@ -846,6 +872,7 @@ public class Parser
 		}
 	}
 
+	//<stat>        ::=  <repstat> | <asgnstat> | <iostat> | <callstat> | <returnstat>
 	private TreeNode stat() throws IOException
 	{
 		String error = "Invalid statement declaration.";
@@ -870,7 +897,7 @@ public class Parser
 			{
 				return null;
 			}
-			if (lookahead.value() == Token.TLPAR)
+			if (lookAhead.value() == Token.TLPAR)
 			{
 				return callstat();
 			}
@@ -881,6 +908,7 @@ public class Parser
 		}
 	}
 
+	//<forstat>     ::=  for ( <asgnlist> ; <bool> ) <stats> end
 	private TreeNode forstat() throws IOException
 	{
 		String error = "Invalid For structure.";
@@ -890,16 +918,16 @@ public class Parser
 		{
 			return null;
 		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		//Check for left paranthesis
 		if (!checkToken(Token.TLPAR, error)) 
 		{
 			return null;
 		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		node.setLeft(asgnlist());
 
@@ -908,8 +936,8 @@ public class Parser
 		{
 			return null;
 		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		node.setMiddle(bool());
 
@@ -918,8 +946,8 @@ public class Parser
 		{
 			return null;
 		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		node.setRight(stats());
 
@@ -928,12 +956,13 @@ public class Parser
 		{
 			return null;
 		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		return node;
 	}
 
+	//<repstat>     ::=  repeat ( <asgnlist> ) <stats> until <bool>
 	private TreeNode repstat() throws IOException
 	{
 		String error = "Invalid repeat structure.";
@@ -944,16 +973,16 @@ public class Parser
 		{
 			return null;
 		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		//Check for left paranthesis
 		if (!checkToken(Token.TLPAR, error)) 
 		{
 			return null;
 		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		node.setLeft(asgnlist());
 
@@ -962,8 +991,8 @@ public class Parser
 		{
 			return null;
 		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		node.setMiddle(stats());
 
@@ -972,14 +1001,15 @@ public class Parser
 		{
 			return null;
 		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		node.setRight(bool());
 
 		return node;
 	}
 
+	//<asgnlist>    ::=  <alist> | ε
 	private TreeNode asgnlist() throws IOException
 	{
 		if (currentToken.value() != Token.TIDEN)
@@ -989,6 +1019,7 @@ public class Parser
 		return alist();
 	}
 
+	//<alist>       ::=  <asgnstat> | <asgnstat> , <alist>
 	private TreeNode alist() throws IOException
 	{
 		TreeNode node = new TreeNode(TreeNode.NASGNS);
@@ -1000,8 +1031,8 @@ public class Parser
 		}
 
 		//Consume token
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		node.setLeft(temp);
 		node.setRight(alist());
@@ -1009,6 +1040,7 @@ public class Parser
 		return node;
 	}
 
+	//<ifstat>      ::=  if ( <bool> ) <stats> end
 	private TreeNode ifstat() throws IOException
 	{
 		String error = "Invalid if statement.";
@@ -1019,15 +1051,15 @@ public class Parser
 		{
 			return null;
 		}
-		lookahead = scanner.nextToken();
+		lookAhead = scanner.nextToken();
 
 		//Check for left paranthesis
 		if (!checkToken(Token.TLPAR, error)) 
 		{
 			return null;
 		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		node.setLeft(bool());
 
@@ -1036,16 +1068,16 @@ public class Parser
 		{
 			return null;
 		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		node.setMiddle(stats());
 
 		//Check for end or else
 		if (currentToken.value() == Token.TEND)
 		{
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 			node.setValue(TreeNode.NIFTH);
 			node.setRight(node.getMiddle());
 			node.setMiddle(null);
@@ -1058,8 +1090,8 @@ public class Parser
 			{
 				return null;
 			}
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 
 			node.setRight(stats());
 
@@ -1068,8 +1100,8 @@ public class Parser
 			{
 				return null;
 			}
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 
 			node.setValue(TreeNode.NIFTE);
 			return node;
@@ -1077,6 +1109,7 @@ public class Parser
 
 	}
 
+	//<asgnstat>    ::=  <var> <asgnop> <bool>
 	private TreeNode asgnstat() throws IOException
 	{
 		TreeNode variable = var();
@@ -1089,6 +1122,7 @@ public class Parser
 		return assign;
 	}
 
+	//<asgnop>      ::=  = | += | -= | *= | /=
 	private TreeNode asgnop() throws IOException
 	{
 		String error = "Invalid assignment.";
@@ -1096,32 +1130,32 @@ public class Parser
 
 		if (currentToken.value() == Token.TEQUL)
 		{
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 			node.setValue(TreeNode.NASGN);
 		}
 		else if (currentToken.value() == Token.TPLEQ)
 		{
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 			node.setValue(TreeNode.NPLEQ);
 		}
 		else if (currentToken.value() == Token.TMNEQ)
 		{
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 			node.setValue(TreeNode.NMNEQ);
 		}
 		else if (currentToken.value() == Token.TDVEQ)
 		{
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 			node.setValue(TreeNode.NDVEQ);
 		}
 		else if (currentToken.value() == Token.TSTEQ)
 		{
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 			node.setValue(TreeNode.NSTEQ);
 		}
 		else
@@ -1132,6 +1166,7 @@ public class Parser
 		return node;
 	}
 
+	//<iostat>      ::=  input <vlist> | print <prlist> | printline <prlist>
 	private TreeNode iostat() throws IOException
 	{
 		String error = "Invalid input/output statement.";
@@ -1139,22 +1174,22 @@ public class Parser
 
 		if (currentToken.value() == Token.TINPT)
 		{
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 			node.setValue(TreeNode.NINPUT);
 			node.setLeft(vlist());
 		}
 		else if (currentToken.value() == Token.TPRIN) 
 		{
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 			node.setValue(TreeNode.NPRINT);
 			node.setLeft(prlist());
 		}
 		else if (currentToken.value() == Token.TPRLN)
 		{
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 			node.setValue(TreeNode.NPRLN);
 			node.setLeft(prlist());
 		}
@@ -1166,6 +1201,7 @@ public class Parser
 		return node;
 	}
 
+	//<callstat>    ::=  <id> ( <elist> ) | <id> ( )
 	private TreeNode callstat() throws IOException
 	{
 		String error = "Invalid call statement.";
@@ -1178,22 +1214,22 @@ public class Parser
 			return null;
 		}
 		stRec.setName(currentToken.getStr());
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		//Check for left paranthesis
 		if (!checkToken(Token.TLPAR, error)) 
 		{
 			return null;
 		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		if (currentToken.value() == Token.TRPAR)
 		{
 			//Consume token
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 		}
 		else
 		{
@@ -1203,8 +1239,8 @@ public class Parser
 			{
 				return null;
 			}
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 		}
 
 		node.setSymbol(stRec);
@@ -1212,6 +1248,7 @@ public class Parser
 		return node;
 	}
 
+	//<returnstat>  ::=  return | return <expr>
 	private TreeNode returnstat() throws IOException
 	{
 		String error = "Invalid return statement.";
@@ -1226,8 +1263,8 @@ public class Parser
 		{
 			return null;
 		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		//Check for return or expr node
 		for (int i = 0; i < first.length; i++)
@@ -1241,6 +1278,7 @@ public class Parser
 		return node;
 	}
 
+	//<vlist>       ::=  <var> , <vlist> | <var>
 	private TreeNode vlist() throws IOException
 	{
 		TreeNode node = new TreeNode(TreeNode.NVLIST);
@@ -1251,8 +1289,8 @@ public class Parser
 			return temp;
 		}
 		//Consume Token
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		node.setLeft(temp);
 		node.setRight(vlist());
@@ -1260,6 +1298,7 @@ public class Parser
 		return node;
 	}
 
+	//<var>         ::=  <id> | <id>[<expr>] . <id>
 	private TreeNode var() throws IOException
 	{
 		String error = "Invalid variable declaration.";
@@ -1268,16 +1307,16 @@ public class Parser
 			return null;
 		}
 		StRec stRec = new StRec(currentToken.getStr());
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		//Check for NSIMV or NARRV
 		if (currentToken.value() == Token.TLBRK)
 		{
 			TreeNode node = new TreeNode(TreeNode.NARRV);
 			//Consume token
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 
 			node.setLeft(expr());
 
@@ -1286,23 +1325,23 @@ public class Parser
 			{
 				return null;
 			}
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 
 			//Check for dot token
 			if (!checkToken(Token.TDOT, error)) 
 			{
 				return null;
 			}
-			lookahead = scanner.nextToken();
+			lookAhead = scanner.nextToken();
 
 			//Check for identifier token and consume
 			if (!checkToken(Token.TIDEN, error)) 
 			{
 				return null;
 			}
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 
 			node.setSymbol(stRec);
 			symbolTable.put(stRec.getName(), stRec);
@@ -1319,6 +1358,7 @@ public class Parser
 		}
 	}
 
+	//<elist>       ::=  <bool> , <elist> | <bool>
 	private TreeNode elist() throws IOException
 	{
 		TreeNode node = new TreeNode(TreeNode.NEXPL);
@@ -1329,8 +1369,8 @@ public class Parser
 			return temp;
 		}
 		//Consume Token
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		node.setLeft(temp);
 		node.setRight(elist());
@@ -1363,6 +1403,7 @@ public class Parser
 		}
 	}
 
+	//<rel>         ::=  not <expr> <relop> <expr> | <expr> <relop> <expr> | <expr>
 	private TreeNode rel() throws IOException
 	{
 		TreeNode node = new TreeNode(TreeNode.NNOT);
@@ -1371,8 +1412,8 @@ public class Parser
 		if (currentToken.value() == Token.TNOT)
 		{
 			//Consume Token
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 
 			node.setLeft(expr());
 			node.setMiddle(relop());
@@ -1395,6 +1436,7 @@ public class Parser
 		}
 	}
 
+	//<logop>       ::=  and | or | xor
 	private TreeNode logop() throws IOException
 	{
 		String error = "Invalid logic operation.";
@@ -1402,20 +1444,20 @@ public class Parser
 
 		if (currentToken.value() == Token.TAND)
 		{
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 			node.setValue(TreeNode.NAND);
 		}
 		else if (currentToken.value() == Token.TOR)
 		{
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 			node.setValue(TreeNode.NOR);
 		}
 		else if (currentToken.value() == Token.TXOR)
 		{
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 			node.setValue(TreeNode.NXOR);
 		}
 		else
@@ -1426,6 +1468,7 @@ public class Parser
 		return node;
 	}
 
+	//<relop>       ::=  == | != | > | <= | < | >=
 	private TreeNode relop() throws IOException
 	{
 		String error = "Invalid relation operation.";
@@ -1433,38 +1476,38 @@ public class Parser
 
 		if (currentToken.value() == Token.TEQEQ)
 		{
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 			node.setValue(TreeNode.NEQL);
 		}
 		else if (currentToken.value() == Token.TNEQL)
 		{
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 			node.setValue(TreeNode.NNEQ);
 		}
 		else if (currentToken.value() == Token.TGRTR)
 		{
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 			node.setValue(TreeNode.NGRT);
 		}
 		else if (currentToken.value() == Token.TLEQL)
 		{
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 			node.setValue(TreeNode.NLEQ);
 		}
 		else if (currentToken.value() == Token.TLESS)
 		{
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 			node.setValue(TreeNode.NLSS);
 		}
 		else if (currentToken.value() == Token.TGEQL)
 		{
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 			node.setValue(TreeNode.NGEQ);
 		}
 		else
@@ -1475,6 +1518,7 @@ public class Parser
 		return node;
 	}
 
+	//<expr>        ::=  <expr> + <fact> | <expr> - <fact> | <fact>
 	private TreeNode expr() throws IOException
 	{
 		TreeNode temp;
@@ -1482,13 +1526,14 @@ public class Parser
 		return exprtail(temp);
 	}
 
+	//expr llr(1) solution
 	private TreeNode exprtail(TreeNode left) throws IOException
 	{
 		TreeNode parent;
 		if (currentToken.value() == Token.TPLUS)
 		{
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 			parent = new TreeNode(TreeNode.NADD);
 			parent.setLeft(left);
 			parent.setRight(term());
@@ -1496,8 +1541,8 @@ public class Parser
 		}
 		else if (currentToken.value() == Token.TMINS)
 		{
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 			parent = new TreeNode(TreeNode.NSUB);
 			parent.setLeft(left);
 			parent.setRight(term());
@@ -1510,20 +1555,49 @@ public class Parser
 		
 	}
 
+	//<fact>        ::=  <fact> * <term> | <fact> / <term> | <fact> % <term> | <term>
+	private TreeNode fact() throws IOException
+	{
+		TreeNode temp;
+		temp = exponent();
+		return facttail(temp);
+	}
+
+	//fact llr(1) solution
+	private TreeNode facttail(TreeNode left) throws IOException
+	{
+		TreeNode parent;
+		if (currentToken.value() == Token.TCART)
+		{
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
+			parent = new TreeNode(TreeNode.NPOW);
+			parent.setLeft(left);
+			parent.setRight(exponent());
+			return(facttail(parent));
+		}
+		else
+		{
+			return left;
+		}
+	}
+
+	//<term>        ::=  <term> ^ <exponent> | <exponent>
 	private TreeNode term() throws IOException
 	{
 		TreeNode temp;
 		temp = fact();
-		return termtail(temp);
+		return termTail(temp);
 	}
 
-	private TreeNode termtail(TreeNode left) throws IOException
+	//termTail llr(1) solution
+	private TreeNode termTail(TreeNode left) throws IOException
 	{
 		TreeNode parent;
 		if (currentToken.value() == Token.TSTAR)
 		{
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 			parent = new TreeNode(TreeNode.NMUL);
 			parent.setLeft(left);
 			parent.setRight(fact());
@@ -1531,8 +1605,8 @@ public class Parser
 		}
 		else if (currentToken.value() == Token.TDIVD)
 		{
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 			parent = new TreeNode(TreeNode.NDIV);
 			parent.setLeft(left);
 			parent.setRight(fact());
@@ -1540,8 +1614,8 @@ public class Parser
 		}
 		else if (currentToken.value() == Token.TPERC)
 		{
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 			parent = new TreeNode(TreeNode.NMOD);
 			parent.setLeft(left);
 			parent.setRight(fact());
@@ -1554,31 +1628,8 @@ public class Parser
 		
 	}
 
-	private TreeNode fact() throws IOException
-	{
-		TreeNode temp;
-		temp = exponent();
-		return facttail(temp);
-	}
-
-	private TreeNode facttail(TreeNode left) throws IOException
-	{
-		TreeNode parent;
-		if (currentToken.value() == Token.TCART)
-		{
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
-			parent = new TreeNode(TreeNode.NPOW);
-			parent.setLeft(left);
-			parent.setRight(exponent());
-			return(facttail(parent));
-		}
-		else
-		{
-			return left;
-		}
-	}
-
+	//<exponent>    ::=  <var> | <intlit> | <reallit> | <fncall> | true | false
+	//<exponent>    ::=  ( <bool> )
 	private TreeNode exponent() throws IOException
 	{
 		String error = "Invalid exponent operation.";
@@ -1589,8 +1640,8 @@ public class Parser
 			node.setValue(TreeNode.NILIT);
 			stRec.setName(currentToken.getStr());
 			//Consume token
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 			node.setSymbol(stRec);
 			symbolTable.put(stRec.getName(), stRec);
 			return node;
@@ -1600,8 +1651,8 @@ public class Parser
 			node.setValue(TreeNode.NFLIT);
 			stRec.setName(currentToken.getStr());
 			//Consume token
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 			node.setSymbol(stRec);
 			symbolTable.put(stRec.getName(), stRec);
 			return node;
@@ -1609,7 +1660,7 @@ public class Parser
 		else if (currentToken.value() == Token.TIDEN)
 		{
 			//check for fncall
-			if (lookahead.value() == Token.TLPAR)
+			if (lookAhead.value() == Token.TLPAR)
 			{
 				return fncall();
 			}
@@ -1623,8 +1674,8 @@ public class Parser
 			node.setValue(TreeNode.NTRUE);
 			stRec.setName(currentToken.getStr());
 			//Consume token
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 			node.setSymbol(stRec);
 			symbolTable.put(stRec.getName(), stRec);
 			return node;
@@ -1634,8 +1685,8 @@ public class Parser
 			node.setValue(TreeNode.NFALS);
 			stRec.setName(currentToken.getStr());
 			//Consume token
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 			node.setSymbol(stRec);
 			symbolTable.put(stRec.getName(), stRec);
 			return node;
@@ -1647,8 +1698,8 @@ public class Parser
 			{
 				return null;
 			}
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 
 			TreeNode temp;
 			temp = bool();
@@ -1658,13 +1709,14 @@ public class Parser
 			{
 				return null;
 			}
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
 
 			return temp;
 		}
 	}
 
+	//<fncall>      ::=  <id> ( <elist> ) | <id> ( )
 	private TreeNode fncall() throws IOException
 	{
 		String error = "Invalid function call.";
@@ -1677,16 +1729,16 @@ public class Parser
 			return null;
 		}
 		stRec.setName(currentToken.getStr());
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		//Check for left paranthesis token
 		if (!checkToken(Token.TLPAR, error)) 
 		{
 			return null;
 		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		if (currentToken.value() != Token.TRPAR)
 		{
@@ -1698,12 +1750,13 @@ public class Parser
 		{
 			return null;
 		}
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		return node;
 	}
 
+	//<prlist>      ::=  <printitem> , <prlist> | <printitem>
 	private TreeNode prlist() throws IOException
 	{
 		TreeNode node = new TreeNode(TreeNode.NPRLST);
@@ -1715,8 +1768,8 @@ public class Parser
 		}
 
 		//Consume token
-		currentToken = lookahead;
-		lookahead = scanner.nextToken();
+		currentToken = lookAhead;
+		lookAhead = scanner.nextToken();
 
 		node.setLeft(temp);
 		node.setRight(prlist());
@@ -1724,16 +1777,20 @@ public class Parser
 		return node;
 	}
 
+	//<printitem>   ::=  <expr> | <string>
 	private TreeNode printitem() throws IOException
 	{
 		if (currentToken.value() == Token.TSTRG)
 		{
 			TreeNode node = new TreeNode(TreeNode.NSTRG);
 			StRec stRec = new StRec(currentToken.getStr());
-			currentToken = lookahead;
-			lookahead = scanner.nextToken();
+
+			currentToken = lookAhead;
+			lookAhead = scanner.nextToken();
+
 			node.setSymbol(stRec);
 			symbolTable.put(stRec.getName(), stRec);
+
 			return node;
 		}
 		else
