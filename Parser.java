@@ -18,6 +18,7 @@ public class Parser
 	private Token lookAhead;				//Lookahead toekn for LL(1)
 	private OutputController outPut;		//Output controller reference
 	private SymbolTable symbolTable;
+	private boolean debug = false;
 
     //Constructor
 	public Parser(OutputController outputController)
@@ -43,7 +44,7 @@ public class Parser
 
 		if (!checkToken(Token.TCD19, error)) 
 		{
-			System.out.println("returning null");
+			if(debug == true){System.out.println("TCD19 error in program");}
 			return null;
 		}
 
@@ -52,7 +53,7 @@ public class Parser
 		lookAhead = scanner.nextToken();
 		if (!checkToken(Token.TIDEN, error))
 		{
-			System.out.println("returning null");
+			if(debug == true){System.out.println("TIDEN error in program");}
 			return null;
 		} 
 		stRec.setName(currentToken.getStr());
@@ -86,6 +87,7 @@ public class Parser
 		//if there is nothing just don't return it
 		if(node.getLeft() == null && node.getRight() == null && node.getMiddle() == null)
 		{
+			//System.out.println("no globals");
 			return null;
 		}
 
@@ -97,6 +99,7 @@ public class Parser
 	{
 		if (currentToken.value() != Token.TCONS)
 		{
+			if(debug == true){System.out.println("TCONS error in consts");}
 			return null;
 		}
 		//Consume token
@@ -139,6 +142,7 @@ public class Parser
 		//check identifier
 		if (!checkToken(Token.TIDEN, error))
 		{
+			if(debug == true){System.out.println("TIDEN error in init");}
 			return null;
 		}
 
@@ -149,9 +153,10 @@ public class Parser
 		//check equals token
 		if (!checkToken(Token.TEQUL, error)) 
 		{
+			if(debug == true){System.out.println("TEQUL error in init");}
 			return null;
 		}
-		
+
 		currentToken = lookAhead;
 		lookAhead = scanner.nextToken();
 
@@ -167,6 +172,7 @@ public class Parser
 	{
 		if (currentToken.value() != Token.TTYPS)
 		{
+			if(debug == true){System.out.println("TTYPS error in types");}
 			return null;
 		}
 
@@ -182,6 +188,7 @@ public class Parser
 	{
 		if (currentToken.value() != Token.TARRS)
 		{
+			if(debug == true){System.out.println("TARRS error in arrays");}
 			return null;
 		}
 
@@ -201,6 +208,7 @@ public class Parser
 		//if there is nothing just don't return it
 		if (currentToken.value() != Token.TFUNC)
 		{
+			if(debug == true){System.out.println("TFUNC error in funcs");}
 			return null;
 		}
 
@@ -223,6 +231,7 @@ public class Parser
 		//checks for the main token
 		if (!checkToken(Token.TMAIN, error))
 		{
+			if(debug == true){System.out.println("TMAIN error in mainbody");}
 			return null;
 		}
 
@@ -235,6 +244,7 @@ public class Parser
 		//checks for the begin token
 		if (!checkToken(Token.TBEGN, error))
 		{
+			if(debug == true){System.out.println("TBEGN error in mainbody");}
 			return null;
 		}
 
@@ -247,6 +257,7 @@ public class Parser
 		//Checks for end token
 		if (!checkToken(Token.TEND, error))
 		{
+			if(debug == true){System.out.println("TEND error in mainbody");}
 			return null;
 		}
 
@@ -256,6 +267,7 @@ public class Parser
 		//Checks for CD19 token
 		if (!checkToken(Token.TCD19, error))
 		{
+			if(debug == true){System.out.println("TCD19 error in mainbody");}
 			return null;
 		}
 
@@ -265,6 +277,7 @@ public class Parser
 		//Check for identifier token
 		if (!checkToken(Token.TIDEN, error))
 		{
+			if(debug == true){System.out.println("TIDEN error in mainbody");}
 			return null;
 		}
 		
@@ -273,6 +286,7 @@ public class Parser
 
 		if (!checkToken(Token.TEOF, error))
 		{
+			if(debug == true){System.out.println("TEOF error in mainbody");}
 			return null;
 		}
 
@@ -329,6 +343,7 @@ public class Parser
 		//Check for identifier token
 		if (!checkToken(Token.TIDEN, error))
 		{
+			if(debug == true){System.out.println("TIDEN error in type");}
 			return null;
 		}
 		stRec.setName(currentToken.getStr());
@@ -340,6 +355,7 @@ public class Parser
 		//Check for IS token
 		if (!checkToken(Token.TIS, error))
 		{
+			if(debug == true){System.out.println("TIS error in type");}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -353,6 +369,7 @@ public class Parser
 			//Check for end token
 			if (!checkToken(Token.TEND, error))
 			{
+				if(debug == true){System.out.println("TEND error in type");}
 				return null;
 			}
 			currentToken = lookAhead;
@@ -368,6 +385,7 @@ public class Parser
 		//Check for right bracket token
 		if (!checkToken(Token.TLBRK, error))
 		{
+			if(debug == true){System.out.println("TLBRK error in type");}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -378,6 +396,7 @@ public class Parser
 		//Check for left bracket token
 		if (!checkToken(Token.TRBRK, error))
 		{
+			if(debug == true){System.out.println("TRBRK error in type");}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -386,6 +405,7 @@ public class Parser
 		//Check for of token
 		if (!checkToken(Token.TOF, error))
 		{
+			if(debug == true){System.out.println("TOF error in type");}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -394,6 +414,7 @@ public class Parser
 		//Check for identifier token
 		if (!checkToken(Token.TIDEN, error))
 		{
+			if(debug == true){System.out.println("TIDEN error in type");}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -432,8 +453,9 @@ public class Parser
 		StRec stRec = new StRec();
 		
 		//Check for identifier token
-		if (!checkToken(Token.TIDEN, error+" A")) 
+		if (!checkToken(Token.TIDEN, error)) 
 		{
+			if(debug == true){System.out.println("TIDEN error in sdecl");}
 			return null;
 		}
 		stRec.setName(currentToken.getStr());
@@ -441,8 +463,9 @@ public class Parser
 		lookAhead = scanner.nextToken();
 
 		//Check for colon token
-		if (!checkToken(Token.TCOLN, error+" b")) 
+		if (!checkToken(Token.TCOLN, error)) 
 		{
+			if(debug == true){System.out.println("TCOLN error in sdecl");}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -464,8 +487,9 @@ public class Parser
 		}
 		else
 		{
-			if (!checkToken(Token.TINTG, error+" c")) 
+			if (!checkToken(Token.TINTG, error)) 
 			{
+				if(debug == true){System.out.println("TINTG error in sdecl");}
 				return null;
 			}
 		}
@@ -508,6 +532,7 @@ public class Parser
 		//Check for identifier
 		if (!checkToken(Token.TIDEN, error))  
 		{
+			if(debug == true){System.out.println("TIDEN error in arrdecl");}
 			return null;
 		}
 		stRec.setName(currentToken.getStr());
@@ -517,6 +542,7 @@ public class Parser
 		//Check for colon token
 		if (!checkToken(Token.TCOLN, error))  
 		{
+			if(debug == true){System.out.println("TCOLN error in arrdecl");}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -524,6 +550,7 @@ public class Parser
 
 		if (!checkToken(Token.TIDEN, error))  
 		{
+			if(debug == true){System.out.println("TIDEN error in arrdecl");}
 			return null;
 		}
 		stRec.setType(currentToken.getStr());
@@ -546,6 +573,7 @@ public class Parser
 		//no func, returns null
 		if (!checkToken(Token.TFUNC, error))  
 		{
+			if(debug == true){System.out.println("TFUNC error in func");}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -554,6 +582,7 @@ public class Parser
 		//no identifier returns null
 		if (!checkToken(Token.TIDEN, error))  
 		{
+			if(debug == true){System.out.println("TIDEN error in func");}
 			return null;
 		}
 		stRec.setName(currentToken.getStr());
@@ -563,6 +592,7 @@ public class Parser
 		//no left parenthesis, return null
 		if (!checkToken(Token.TLPAR, error)) 
 		{
+			if(debug == true){System.out.println("TLPAR error in func");}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -573,6 +603,7 @@ public class Parser
 		//Check for right paranthesis token
 		if (!checkToken(Token.TRPAR, error))  
 		{
+			if(debug == true){System.out.println("TRPAR error in func");}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -581,6 +612,7 @@ public class Parser
 		//Check for colon token
 		if (!checkToken(Token.TCOLN, error))  
 		{
+			if(debug == true){System.out.println("TCOLN error in func");}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -607,6 +639,7 @@ public class Parser
 		{
 			if (!checkToken(Token.TINTG, error))  
 			{
+				if(debug == true){System.out.println("TTNTG error in func");}
 				return null;
 			}
 		}
@@ -618,6 +651,7 @@ public class Parser
 		//Check for begin token
 		if (!checkToken(Token.TBEGN, error))  
 		{
+			if(debug == true){System.out.println("TBEGN error in func");}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -628,6 +662,7 @@ public class Parser
 		//Check for end token
 		if (!checkToken(Token.TEND, error))  
 		{
+			if(debug == true){System.out.println("TEND error in func");}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -648,6 +683,7 @@ public class Parser
 		}
 		else
 		{
+			if(debug == true){System.out.println("non error: plist threw ε");}
 			return null;
 		}
 	}
@@ -699,6 +735,7 @@ public class Parser
 		}
 		else
 		{
+			if(debug == true){System.out.println("non error: param returning null");}
 			return null;
 		}
 		node.setLeft(check);
@@ -713,6 +750,7 @@ public class Parser
 	{
 		if (currentToken.value() != Token.TIDEN)
 		{
+			if(debug == true){System.out.println("non error: locals returning null");}
 			return null;
 		}
 
@@ -749,6 +787,7 @@ public class Parser
 		//Check for identifier token
 		if (!checkToken(Token.TIDEN, error)) 
 		{
+			if(debug == true){System.out.println("TIDEN error in decl");}
 			return null;
 		}
 		stRec.setName(currentToken.getStr());
@@ -758,6 +797,7 @@ public class Parser
 		//Check for colon token
 		if (!checkToken(Token.TCOLN, error)) 
 		{
+			if(debug == true){System.out.println("TCOLN error in decl");}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -788,6 +828,7 @@ public class Parser
 		{
 			if (!checkToken(Token.TINTG, error)) 
 			{
+				if(debug == true){System.out.println("TINTG error in decl");}
 				return null;
 			}
 		}
@@ -838,6 +879,7 @@ public class Parser
 			//Check for semicolon token
 			if (!checkToken(Token.TSEMI, error + currentToken.getStr()))
 			{
+				if(debug == true){System.out.println("TSEMI error in stats");}
 				return null;
 			}
 
@@ -895,6 +937,7 @@ public class Parser
 		{
 			if (!checkToken(Token.TIDEN, error)) 
 			{
+				if(debug == true){System.out.println("TIDEN error in stat");}
 				return null;
 			}
 			if (lookAhead.value() == Token.TLPAR)
@@ -916,6 +959,7 @@ public class Parser
 		//Check for For token
 		if (!checkToken(Token.TFOR, error))
 		{
+			if(debug == true){System.out.println("TFOR error in forstat");}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -924,6 +968,7 @@ public class Parser
 		//Check for left paranthesis
 		if (!checkToken(Token.TLPAR, error)) 
 		{
+			if(debug == true){System.out.println("TLPAR error in forstat");}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -934,6 +979,7 @@ public class Parser
 		//Check for semicolon token
 		if (!checkToken(Token.TSEMI, error))
 		{
+			if(debug == true){System.out.println("TSEMI error in forstat");}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -944,6 +990,7 @@ public class Parser
 		//Check for right paranthesis
 		if (!checkToken(Token.TRPAR, error))
 		{
+			if(debug == true){System.out.println("TRPAR error in forstat");}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -954,6 +1001,7 @@ public class Parser
 		//Check for end
 		if (!checkToken(Token.TEND, error)) 
 		{
+			if(debug == true){System.out.println("TEND error in forstat");}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -971,6 +1019,7 @@ public class Parser
 		//Check for repeat token
 		if (!checkToken(Token.TREPT, error))
 		{
+			if(debug == true){System.out.println("TREPT error in repstat");}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -979,6 +1028,7 @@ public class Parser
 		//Check for left paranthesis
 		if (!checkToken(Token.TLPAR, error)) 
 		{
+			if(debug == true){System.out.println("TLPAR error in repstat");}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -989,6 +1039,7 @@ public class Parser
 		//Check for right paranthesis
 		if (!checkToken(Token.TRPAR, error)) 
 		{
+			if(debug == true){System.out.println("TRPAR error in repstat");}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -999,6 +1050,7 @@ public class Parser
 		//Check for until
 		if (!checkToken(Token.TUNTL, error))
 		{
+			if(debug == true){System.out.println("TUNTL error in repstat");}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -1014,6 +1066,7 @@ public class Parser
 	{
 		if (currentToken.value() != Token.TIDEN)
 		{
+			if(debug == true){System.out.println("non error: asgnlist returning null");}
 			return null;
 		}
 		return alist();
@@ -1049,6 +1102,7 @@ public class Parser
 		//Check for IF token
 		if (!checkToken(Token.TIFTH, error)) 
 		{
+			if(debug == true){System.out.println("TIFTH error in ifstat");}
 			return null;
 		}
 		lookAhead = scanner.nextToken();
@@ -1056,6 +1110,7 @@ public class Parser
 		//Check for left paranthesis
 		if (!checkToken(Token.TLPAR, error)) 
 		{
+			if(debug == true){System.out.println("TLPAR error in ifstat");}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -1066,6 +1121,7 @@ public class Parser
 		//Check for right paranthesis
 		if (!checkToken(Token.TRPAR, error))
 		{
+			if(debug == true){System.out.println("TRPAR error in ifstat");}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -1088,6 +1144,7 @@ public class Parser
 			//Check for else
 			if (!checkToken(Token.TELSE, error)) 
 			{
+				if(debug == true){System.out.println("TELSE error in ifstat");}
 				return null;
 			}
 			currentToken = lookAhead;
@@ -1098,6 +1155,7 @@ public class Parser
 			//Check for end
 			if (!checkToken(Token.TEND, error))
 			{
+				if(debug == true){System.out.println("TEND error in ifstat");}
 				return null;
 			}
 			currentToken = lookAhead;
@@ -1161,6 +1219,7 @@ public class Parser
 		else
 		{
 			checkToken(Token.TEQUL, error);
+			if(debug == true){System.out.println("non error: returning null in asgnop");}
 			return null;
 		}
 		return node;
@@ -1196,6 +1255,7 @@ public class Parser
 		else
 		{
 			checkToken(Token.TINPT, error);
+			if(debug == true){System.out.println("non error: returning null in iostat");}
 			return null;
 		}
 		return node;
@@ -1211,6 +1271,7 @@ public class Parser
 		//Check for identifier token
 		if (!checkToken(Token.TIDEN, error)) 
 		{
+			if(debug == true){System.out.println("TIDEN error in callstat");}
 			return null;
 		}
 		stRec.setName(currentToken.getStr());
@@ -1220,6 +1281,7 @@ public class Parser
 		//Check for left paranthesis
 		if (!checkToken(Token.TLPAR, error)) 
 		{
+			if(debug == true){System.out.println("TLPAR error in callstat");}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -1237,6 +1299,7 @@ public class Parser
 			//Check for right paranthesis
 			if (!checkToken(Token.TRPAR, error)) 
 			{
+				if(debug == true){System.out.println("TRPAR error in callstat");}
 				return null;
 			}
 			currentToken = lookAhead;
@@ -1261,6 +1324,7 @@ public class Parser
 		//Check for return token
 		if (!checkToken(Token.TRETN, error))
 		{
+			if(debug == true){System.out.println("TRETN error in returnstat");}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -1304,6 +1368,7 @@ public class Parser
 		String error = "Invalid variable declaration.";
 		if (!checkToken(Token.TIDEN, error)) 
 		{
+			if(debug == true){System.out.println("TIDEN error in var");}
 			return null;
 		}
 		StRec stRec = new StRec(currentToken.getStr());
@@ -1323,6 +1388,7 @@ public class Parser
 			//Check for right bracket token and consume
 			if (!checkToken(Token.TRBRK, error)) 
 			{
+				if(debug == true){System.out.println("TRBRK error in var");}
 				return null;
 			}
 			currentToken = lookAhead;
@@ -1331,6 +1397,7 @@ public class Parser
 			//Check for dot token
 			if (!checkToken(Token.TDOT, error)) 
 			{
+				if(debug == true){System.out.println("TDOT error in var");}
 				return null;
 			}
 			lookAhead = scanner.nextToken();
@@ -1338,6 +1405,7 @@ public class Parser
 			//Check for identifier token and consume
 			if (!checkToken(Token.TIDEN, error)) 
 			{
+				if(debug == true){System.out.println("TIDEN error in var");}
 				return null;
 			}
 			currentToken = lookAhead;
@@ -1463,6 +1531,7 @@ public class Parser
 		else
 		{
 			checkToken(Token.TAND, error);
+			if(debug == true){System.out.println("non error: returning null in logop");}
 			return null;
 		}
 		return node;
@@ -1513,6 +1582,7 @@ public class Parser
 		else
 		{
 			checkToken(Token.TEQEQ, error);
+			if(debug == true){System.out.println("non error: returning null in relop");}
 			return null;
 		}
 		return node;
@@ -1696,6 +1766,7 @@ public class Parser
 			//Check for left paranthesis token and consume
 			if (!checkToken(Token.TLPAR, error)) 
 			{
+				if(debug == true){System.out.println("TLPAR error in exponent");}
 				return null;
 			}
 			currentToken = lookAhead;
@@ -1707,6 +1778,7 @@ public class Parser
 			//Check for right paranthesis token and consume
 			if (!checkToken(Token.TRPAR, error)) 
 			{
+				if(debug == true){System.out.println("TRPAR error in exponent");}
 				return null;
 			}
 			currentToken = lookAhead;
@@ -1726,6 +1798,7 @@ public class Parser
 		//Check for identifier token
 		if (!checkToken(Token.TIDEN, error)) 
 		{
+			if(debug == true){System.out.println("TIDEN error in fncall");}
 			return null;
 		}
 		stRec.setName(currentToken.getStr());
@@ -1735,6 +1808,7 @@ public class Parser
 		//Check for left paranthesis token
 		if (!checkToken(Token.TLPAR, error)) 
 		{
+			if(debug == true){System.out.println("TLPAR error in fncall");}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -1748,6 +1822,7 @@ public class Parser
 		//Check for right paranthesis token
 		if (!checkToken(Token.TRPAR, error))
 		{
+			if(debug == true){System.out.println("TRPAR error in fncall");}
 			return null;
 		}
 		currentToken = lookAhead;
