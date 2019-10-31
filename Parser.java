@@ -114,60 +114,55 @@ public class Parser
 		return initlist();
 	}
 
+//This might cause issues!!!!
 	//<initlist>    ::=  <init> | <init> , <initlist>
 	private TreeNode initlist() throws IOException
 	{
-		TreeNode node = new TreeNode(TreeNode.NILIST);
 		TreeNode inn = init();
 
-		//<init>
-		if (currentToken.value() != Token.TCOMA)
-		{
-			return inn;
-		}
-		
 		//<init> , <initlist>
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		if (currentToken.value() == Token.TCOMA)
+		{
+			currentToken = scanner.nextToken();
 
-		node.setLeft(inn);
+			return new TreeNode(TreeNode.NILIST, inn, initlist());
+		}
 
-		node.setRight(initlist());
-
-		return node;
+		//<init>
+		return inn;
 	}
 
 	//<init> ::= <id> = <expr>
 	private TreeNode init() throws IOException
 	{
 		String error = "Invalid Initialisation Constant";
-		TreeNode node = new TreeNode(TreeNode.NINIT);
+		TreeNode node = new TreeNode(TreeNode.NUNDEF);
 		StRec stRec = new StRec();
 
 		//check identifier
-		if (!checkToken(Token.TIDEN, error))
+		if (!checkToken(Token.TIDEN, "Invalid Initialisation: Excpected TIDEN"))
 		{
 			if(debug == true){System.out.println("TIDEN error in init line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-			return null;
+			return node;
 		}
 
 		stRec.setName(currentToken.getStr());
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
 
 		//check equals token
-		if (!checkToken(Token.TEQUL, error)) 
+		if (!checkToken(Token.TEQUL, "Invalid initialisation: Expected a '=' ")) 
 		{
 			if(debug == true){System.out.println("TEQUL error in init line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-			return null;
+			return node;
 		}
 
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
-
-		node.setLeft(expr());
-		node.setSymbol(stRec);
+		//if error here check ordering
+		currentToken = scanner.nextToken();
+		node.setValue(TreeNode.NINIT);
 		symbolTable.put(stRec.getName(), stRec);
+		//node is no longer a NUNDEF, using new logic to prevent null pointer exceptions
+		node.setSymbol(stRec);
+		node.setLeft(expr());
 
 		return node;
 	}
@@ -182,8 +177,7 @@ public class Parser
 		}
 
 		//Consume token
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
 
 		return typelist();
 	}
@@ -198,8 +192,7 @@ public class Parser
 		}
 
 		//Consume token
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
 
 		return arrdecls();
 	}	
@@ -230,33 +223,32 @@ public class Parser
 	//<mainbody>    ::=  main <slist> begin <stats> end CD19 <id>
 	private TreeNode mainbody() throws IOException 
 	{
-		String error = "Invalid mainbody format.";
-		TreeNode node = new TreeNode(TreeNode.NMAIN);
+		String error = "Invalid mainbody format: ";
+		TreeNode node = new TreeNode(TreeNode.NUNDEF);
+		StRec stRec = new StRec();
 
 		//System.out.println("main "+outPut.getLine()+"charPos"+outPut.getCharPos());
 		//checks for the main token
-		if (!checkToken(Token.TMAIN, error))
+		if (!checkToken(Token.TMAIN, error+"Expecting 'MAIN' keyword"))
 		{
 			if(debug == true){System.out.println("TMAIN error in mainbody line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-			//return null;
+			return node;
 		}
 
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
 
 		//Enters left node
 		node.setLeft(slist());
 
 		//System.out.println("begin "+outPut.getLine()+"charPos"+outPut.getCharPos());
 		//checks for the begin token
-		if (!checkToken(Token.TBEGN, error))
+		if (!checkToken(Token.TBEGN, error+"Expecting 'BEGIN' keyword"))
 		{
 			if(debug == true){System.out.println("TBEGN error in mainbody line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-			//return null;
+			return node;
 		}
 
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
 		
 		//Enters right node
 		node.setRight(stats());
@@ -264,85 +256,88 @@ public class Parser
 		//System.out.println("end "+outPut.getLine()+"charPos"+outPut.getCharPos());
 		//System.out.println("above TEND "+currentToken.getStr()+" token value is "+currentToken.debugString() +lookAhead.getStr());
 		//Checks for end token
-		if (!checkToken(Token.TEND, error))
+		if (!checkToken(Token.TEND, error+"Expecting 'END' keyword"))
 		{
 			if(debug == true){System.out.println("TEND error in mainbody line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-			//return null;
+			return node;
 		}
 
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
 
 		//System.out.println("cd19 "+outPut.getLine()+"charPos"+outPut.getCharPos());
 		//Checks for CD19 token
-		if (!checkToken(Token.TCD19, error))
+		if (!checkToken(Token.TCD19, error+"Expecting 'CD19' keyword"))
 		{
 			if(debug == true){System.out.println("TCD19 error in mainbody line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-			//return null;
+			return node;
 		}
 
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
 
 
 		//System.out.println("above tiden "+currentToken.getStr()+" token value is "+currentToken.debugString() +lookAhead.getStr());
 		//System.out.println(outPut.getLine()+"charPos"+outPut.getCharPos());
 		//Check for identifier token
-		if (!checkToken(Token.TIDEN, error))
+		if (!checkToken(Token.TIDEN, error+"Expected ID "))
 		{
 			if(debug == true){System.out.println("TIDEN error in mainbody line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-			//return null;
+			return node;
 		}
 		
+		//setting TIDEN tokens
+		stRec.setName(currentToken.getStr());
+		stRec.setType("CD19");
+
+		symbolTable.put(stRec.getName(), stRec);
+
 		//Check for EOF token
-		currentToken = lookAhead;
+		currentToken = scanner.nextToken();
 
 		//System.out.println(outPut.getLine()+"charPos"+outPut.getCharPos());
-		if (!checkToken(Token.TEOF, error))
+		if (!checkToken(Token.TEOF, "EOF not found"))
 		{
 			if(debug == true){System.out.println("TEOF error in mainbody line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-			//return null;
+			return node;
 		}
+
+		//return NMAIN if no problems occur. pretty sure this should fix the null pointer exceptions
+		//since it return unidentified now.
+		node.setValue(TreeNode.NMAIN);
 
 		return node;
 	}
 
+//error might occur here since  recursion!!!!
 	//<slist>       ::=  <sdecl> | <sdecl> , <slist>
 	private TreeNode slist() throws IOException
-	{	
-		TreeNode node = new TreeNode(TreeNode.NSDLST);
+	{
 		//Enter left node
 		TreeNode sdecimal = sdecl();
 
-		if (currentToken.value() != Token.TCOMA)
+		//<sdecl> , <slist>
+		if (currentToken.value() == Token.TCOMA)
 		{
-			return sdecimal;
+			currentToken = scanner.nextToken();
+			//?????????
+			return new TreeNode(TreeNode.NSDLST, sdecimal, slist());
 		}
 
-		//consume token
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
-
-		node.setLeft(sdecimal);
-		node.setRight(slist());
-
-		return node;
+		//<sdecl>
+		return sdecimal;
 	}
 
 	//<typelist>    ::=  <type> <typelist> | <type>
 	private TreeNode typelist() throws IOException
 	{
-		TreeNode node = new TreeNode(TreeNode.NTYPEL);
+		TreeNode node = type();
 
-		TreeNode typels = type();
-
-		if (currentToken.value() != Token.TIDEN)
+		//<type> <typelist>
+		if (currentToken.value() == Token.TIDEN)
 		{
-			return typels;
+			return new TreeNode(TreeNode.NILIST, node, typelist());
 		}
 
-		node.setLeft(typels);
-		node.setRight(typelist());
+		//type 
 		return node;
 	}
 
@@ -361,8 +356,8 @@ public class Parser
 			return null;
 		}
 		stRec.setName(currentToken.getStr());
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		node.setSymbol(stRec);
 
@@ -372,8 +367,8 @@ public class Parser
 			if(debug == true){System.out.println("TIS error in type line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		//Check if NRTYPE node
 		if (currentToken.value() != Token.TARAY)
@@ -386,15 +381,15 @@ public class Parser
 				if(debug == true){System.out.println("TEND error in type line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 				return null;
 			}
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 			stRec.setType("Struct");
 			symbolTable.put(stRec.getName(), stRec);
 			return node;
 		}
 		//Else NATYPE node
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		//Check for right bracket token
 		if (!checkToken(Token.TLBRK, error))
@@ -402,8 +397,8 @@ public class Parser
 			if(debug == true){System.out.println("TLBRK error in type line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		node.setLeft(expr());
 
@@ -413,8 +408,8 @@ public class Parser
 			if(debug == true){System.out.println("TRBRK error in type line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		//Check for of token
 		if (!checkToken(Token.TOF, error))
@@ -422,8 +417,8 @@ public class Parser
 			if(debug == true){System.out.println("TOF error in type line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		//Check for identifier token
 		if (!checkToken(Token.TIDEN, error))
@@ -431,8 +426,8 @@ public class Parser
 			if(debug == true){System.out.println("TIDEN error in type line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		stRec.setType("Type");
 		symbolTable.put(stRec.getName(), stRec);
@@ -450,8 +445,8 @@ public class Parser
 			return sdecll;
 		}
 		//Consume token
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		node.setLeft(sdecll);
 		node.setRight(fields());
@@ -473,8 +468,8 @@ public class Parser
 			return null;
 		}
 		stRec.setName(currentToken.getStr());
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		//Check for colon token
 		if (!checkToken(Token.TCOLN, error)) 
@@ -482,8 +477,8 @@ public class Parser
 			if(debug == true){System.out.println("TCOLN error in sdecl line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		//Check for integer|real|boolean token
 
@@ -507,8 +502,8 @@ public class Parser
 				return null;
 			}
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		node.setSymbol(stRec);
 		symbolTable.put(stRec.getName(), stRec);
@@ -527,8 +522,8 @@ public class Parser
 		}
 
 		//Consume token
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		node.setLeft(arrdecimals);
 		node.setRight(arrdecls());
@@ -550,8 +545,8 @@ public class Parser
 			return null;
 		}
 		stRec.setName(currentToken.getStr());
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		//Check for colon token
 		if (!checkToken(Token.TCOLN, error))  
@@ -559,8 +554,8 @@ public class Parser
 			if(debug == true){System.out.println("TCOLN error in arrdecl line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		if (!checkToken(Token.TIDEN, error))  
 		{
@@ -568,8 +563,8 @@ public class Parser
 			return null;
 		}
 		stRec.setType(currentToken.getStr());
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		node.setSymbol(stRec);
 		symbolTable.put(stRec.getName(), stRec);
@@ -590,8 +585,8 @@ public class Parser
 			if(debug == true){System.out.println("TFUNC error in func line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		//no identifier returns null
 		if (!checkToken(Token.TIDEN, error))  
@@ -600,8 +595,8 @@ public class Parser
 			return null;
 		}
 		stRec.setName(currentToken.getStr());
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		//no left parenthesis, return null
 		if (!checkToken(Token.TLPAR, error)) 
@@ -609,8 +604,8 @@ public class Parser
 			if(debug == true){System.out.println("TLPAR error in func line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		node.setLeft(plist());
 
@@ -620,8 +615,8 @@ public class Parser
 			if(debug == true){System.out.println("TRPAR error in func line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		//Check for colon token
 		if (!checkToken(Token.TCOLN, error))  
@@ -629,8 +624,8 @@ public class Parser
 			if(debug == true){System.out.println("TCOLN error in func line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		//Check for rtype
 		if (currentToken.value() == Token.TINTG)
@@ -657,8 +652,8 @@ public class Parser
 				return null;
 			}
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		node.setMiddle(locals());
 
@@ -668,8 +663,8 @@ public class Parser
 			if(debug == true){System.out.println("TBEGN error in func line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		node.setRight(stats());
 
@@ -679,8 +674,8 @@ public class Parser
 			if(debug == true){System.out.println("TEND error in func line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		node.setSymbol(stRec);
 		symbolTable.put(stRec.getName(), stRec);
@@ -714,8 +709,8 @@ public class Parser
 		}
 
 		//Consume token
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		node.setLeft(parameter);
 		node.setRight(params());
@@ -730,8 +725,8 @@ public class Parser
 		if (currentToken.value() == Token.TCONS)
 		{
 			//Consume token
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 
 			node.setValue(TreeNode.NARRC);
 			node.setLeft(arrdecl());
@@ -782,8 +777,8 @@ public class Parser
 			return decimal;
 		}
 
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		node.setLeft(decimal);
 		node.setRight(dlist());
@@ -806,8 +801,8 @@ public class Parser
 			return null;
 		}
 		stRec.setName(currentToken.getStr());
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		//Check for colon token
 		if (!checkToken(Token.TCOLN, error)) 
@@ -815,8 +810,8 @@ public class Parser
 			if(debug == true){System.out.println("TCOLN error in decl line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		//Check for rtype
 		if (currentToken.value() == Token.TINTG)
@@ -850,8 +845,8 @@ public class Parser
 			}
 		}
 		System.out.println("----the node is:"+node.getString());
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 		node.setSymbol(stRec);
 		symbolTable.put(stRec.getName(), stRec);
 
@@ -901,8 +896,8 @@ public class Parser
 				return null;
 			}
 
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 
 			//Check if next node is stats or empty string
 			for (int i = 0; i < first.length; i++)
@@ -980,8 +975,8 @@ public class Parser
 			if(debug == true){System.out.println("TFOR error in forstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		//Check for left paranthesis
 		if (!checkToken(Token.TLPAR, error)) 
@@ -989,8 +984,8 @@ public class Parser
 			if(debug == true){System.out.println("TLPAR error in forstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		node.setLeft(asgnlist());
 
@@ -1000,8 +995,8 @@ public class Parser
 			if(debug == true){System.out.println("TSEMI error in forstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		node.setMiddle(bool());
 
@@ -1011,8 +1006,8 @@ public class Parser
 			if(debug == true){System.out.println("TRPAR error in forstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		node.setRight(stats());
 
@@ -1022,8 +1017,8 @@ public class Parser
 			if(debug == true){System.out.println("TEND error in forstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		return node;
 	}
@@ -1040,8 +1035,8 @@ public class Parser
 			if(debug == true){System.out.println("TREPT error in repstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		//Check for left paranthesis
 		if (!checkToken(Token.TLPAR, error)) 
@@ -1049,8 +1044,8 @@ public class Parser
 			if(debug == true){System.out.println("TLPAR error in repstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		node.setLeft(asgnlist());
 
@@ -1060,8 +1055,8 @@ public class Parser
 			if(debug == true){System.out.println("TRPAR error in repstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		node.setMiddle(stats());
 
@@ -1071,8 +1066,8 @@ public class Parser
 			if(debug == true){System.out.println("TUNTL error in repstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		node.setRight(bool());
 
@@ -1102,8 +1097,8 @@ public class Parser
 		}
 
 		//Consume token
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		node.setLeft(temp);
 		node.setRight(alist());
@@ -1123,7 +1118,7 @@ public class Parser
 			if(debug == true){System.out.println("TIFTH error in ifstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
-		lookAhead = scanner.nextToken();
+		
 
 		//Check for left paranthesis
 		if (!checkToken(Token.TLPAR, error)) 
@@ -1131,8 +1126,8 @@ public class Parser
 			if(debug == true){System.out.println("TLPAR error in ifstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		node.setLeft(bool());
 
@@ -1142,16 +1137,16 @@ public class Parser
 			if(debug == true){System.out.println("TRPAR error in ifstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		node.setMiddle(stats());
 
 		//Check for end or else
 		if (currentToken.value() == Token.TEND)
 		{
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 			node.setValue(TreeNode.NIFTH);
 			node.setRight(node.getMiddle());
 			node.setMiddle(null);
@@ -1166,8 +1161,8 @@ public class Parser
 				return null;
 			}
 	
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 
 			node.setRight(stats());
 
@@ -1177,8 +1172,8 @@ public class Parser
 				if(debug == true){System.out.println("TEND error in ifstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 				return null;
 			}
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 
 			node.setValue(TreeNode.NIFTE);
 			return node;
@@ -1207,32 +1202,32 @@ public class Parser
 
 		if (currentToken.value() == Token.TEQUL)
 		{
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 			node.setValue(TreeNode.NASGN);
 		}
 		else if (currentToken.value() == Token.TPLEQ)
 		{
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 			node.setValue(TreeNode.NPLEQ);
 		}
 		else if (currentToken.value() == Token.TMNEQ)
 		{
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 			node.setValue(TreeNode.NMNEQ);
 		}
 		else if (currentToken.value() == Token.TDVEQ)
 		{
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 			node.setValue(TreeNode.NDVEQ);
 		}
 		else if (currentToken.value() == Token.TSTEQ)
 		{
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 			node.setValue(TreeNode.NSTEQ);
 		}
 		else
@@ -1252,22 +1247,22 @@ public class Parser
 
 		if (currentToken.value() == Token.TINPT)
 		{
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 			node.setValue(TreeNode.NINPUT);
 			node.setLeft(vlist());
 		}
 		else if (currentToken.value() == Token.TPRIN) 
 		{
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 			node.setValue(TreeNode.NPRINT);
 			node.setLeft(prlist());
 		}
 		else if (currentToken.value() == Token.TPRLN)
 		{
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 			node.setValue(TreeNode.NPRLN);
 			node.setLeft(prlist());
 		}
@@ -1294,8 +1289,8 @@ public class Parser
 			return null;
 		}
 		stRec.setName(currentToken.getStr());
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		//Check for left paranthesis
 		if (!checkToken(Token.TLPAR, error)) 
@@ -1303,14 +1298,14 @@ public class Parser
 			if(debug == true){System.out.println("TLPAR error in callstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		if (currentToken.value() == Token.TRPAR)
 		{
 			//Consume token
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 		}
 		else
 		{
@@ -1321,8 +1316,8 @@ public class Parser
 				if(debug == true){System.out.println("TRPAR error in callstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 				return null;
 			}
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 		}
 
 		node.setSymbol(stRec);
@@ -1346,8 +1341,8 @@ public class Parser
 			if(debug == true){System.out.println("TRETN error in returnstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		//Check for return or expr node
 		for (int i = 0; i < first.length; i++)
@@ -1372,8 +1367,8 @@ public class Parser
 			return temp;
 		}
 		//Consume Token
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		node.setLeft(temp);
 		node.setRight(vlist());
@@ -1391,16 +1386,16 @@ public class Parser
 			return null;
 		}
 		StRec stRec = new StRec(currentToken.getStr());
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		//Check for NSIMV or NARRV
 		if (currentToken.value() == Token.TLBRK)
 		{
 			TreeNode node = new TreeNode(TreeNode.NARRV);
 			//Consume token
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 
 			node.setLeft(expr());
 
@@ -1410,8 +1405,8 @@ public class Parser
 				if(debug == true){System.out.println("TRBRK error in var line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 				return null;
 			}
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 
 			//Check for dot token
 			if (!checkToken(Token.TDOT, error)) 
@@ -1419,7 +1414,7 @@ public class Parser
 				if(debug == true){System.out.println("TDOT error in var line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 				return null;
 			}
-			lookAhead = scanner.nextToken();
+			
 
 			//Check for identifier token and consume
 			if (!checkToken(Token.TIDEN, error)) 
@@ -1427,8 +1422,8 @@ public class Parser
 				if(debug == true){System.out.println("TIDEN error in var line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 				return null;
 			}
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 
 			node.setSymbol(stRec);
 			symbolTable.put(stRec.getName(), stRec);
@@ -1456,8 +1451,8 @@ public class Parser
 			return temp;
 		}
 		//Consume Token
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		node.setLeft(temp);
 		node.setRight(elist());
@@ -1499,8 +1494,8 @@ public class Parser
 		if (currentToken.value() == Token.TNOT)
 		{
 			//Consume Token
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 
 			node.setLeft(expr());
 			node.setMiddle(relop());
@@ -1531,20 +1526,20 @@ public class Parser
 
 		if (currentToken.value() == Token.TAND)
 		{
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 			node.setValue(TreeNode.NAND);
 		}
 		else if (currentToken.value() == Token.TOR)
 		{
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 			node.setValue(TreeNode.NOR);
 		}
 		else if (currentToken.value() == Token.TXOR)
 		{
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 			node.setValue(TreeNode.NXOR);
 		}
 		else
@@ -1564,38 +1559,38 @@ public class Parser
 
 		if (currentToken.value() == Token.TEQEQ)
 		{
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 			node.setValue(TreeNode.NEQL);
 		}
 		else if (currentToken.value() == Token.TNEQL)
 		{
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 			node.setValue(TreeNode.NNEQ);
 		}
 		else if (currentToken.value() == Token.TGRTR)
 		{
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 			node.setValue(TreeNode.NGRT);
 		}
 		else if (currentToken.value() == Token.TLEQL)
 		{
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 			node.setValue(TreeNode.NLEQ);
 		}
 		else if (currentToken.value() == Token.TLESS)
 		{
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 			node.setValue(TreeNode.NLSS);
 		}
 		else if (currentToken.value() == Token.TGEQL)
 		{
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 			node.setValue(TreeNode.NGEQ);
 		}
 		else
@@ -1621,8 +1616,8 @@ public class Parser
 		TreeNode parent;
 		if (currentToken.value() == Token.TPLUS)
 		{
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 			parent = new TreeNode(TreeNode.NADD);
 			parent.setLeft(left);
 			parent.setRight(term());
@@ -1630,8 +1625,8 @@ public class Parser
 		}
 		else if (currentToken.value() == Token.TMINS)
 		{
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 			parent = new TreeNode(TreeNode.NSUB);
 			parent.setLeft(left);
 			parent.setRight(term());
@@ -1658,8 +1653,8 @@ public class Parser
 		TreeNode parent;
 		if (currentToken.value() == Token.TCART)
 		{
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 			parent = new TreeNode(TreeNode.NPOW);
 			parent.setLeft(left);
 			parent.setRight(exponent());
@@ -1685,8 +1680,8 @@ public class Parser
 		TreeNode parent;
 		if (currentToken.value() == Token.TSTAR)
 		{
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 			parent = new TreeNode(TreeNode.NMUL);
 			parent.setLeft(left);
 			parent.setRight(fact());
@@ -1694,8 +1689,8 @@ public class Parser
 		}
 		else if (currentToken.value() == Token.TDIVD)
 		{
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 			parent = new TreeNode(TreeNode.NDIV);
 			parent.setLeft(left);
 			parent.setRight(fact());
@@ -1703,8 +1698,8 @@ public class Parser
 		}
 		else if (currentToken.value() == Token.TPERC)
 		{
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 			parent = new TreeNode(TreeNode.NMOD);
 			parent.setLeft(left);
 			parent.setRight(fact());
@@ -1729,8 +1724,8 @@ public class Parser
 			node.setValue(TreeNode.NILIT);
 			stRec.setName(currentToken.getStr());
 			//Consume token
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 			node.setSymbol(stRec);
 			symbolTable.put(stRec.getName(), stRec);
 			return node;
@@ -1740,8 +1735,8 @@ public class Parser
 			node.setValue(TreeNode.NFLIT);
 			stRec.setName(currentToken.getStr());
 			//Consume token
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 			node.setSymbol(stRec);
 			symbolTable.put(stRec.getName(), stRec);
 			return node;
@@ -1763,8 +1758,8 @@ public class Parser
 			node.setValue(TreeNode.NTRUE);
 			stRec.setName(currentToken.getStr());
 			//Consume token
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 			node.setSymbol(stRec);
 			symbolTable.put(stRec.getName(), stRec);
 			return node;
@@ -1774,8 +1769,8 @@ public class Parser
 			node.setValue(TreeNode.NFALS);
 			stRec.setName(currentToken.getStr());
 			//Consume token
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 			node.setSymbol(stRec);
 			symbolTable.put(stRec.getName(), stRec);
 			return node;
@@ -1788,8 +1783,8 @@ public class Parser
 				if(debug == true){System.out.println("TLPAR error in exponent line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 				return null;
 			}
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 
 			TreeNode temp;
 			temp = bool();
@@ -1800,8 +1795,8 @@ public class Parser
 				if(debug == true){System.out.println("TRPAR error in exponent line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 				return null;
 			}
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 
 			return temp;
 		}
@@ -1821,8 +1816,8 @@ public class Parser
 			return null;
 		}
 		stRec.setName(currentToken.getStr());
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		//Check for left paranthesis token
 		if (!checkToken(Token.TLPAR, error)) 
@@ -1830,8 +1825,8 @@ public class Parser
 			if(debug == true){System.out.println("TLPAR error in fncall line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		if (currentToken.value() != Token.TRPAR)
 		{
@@ -1844,8 +1839,8 @@ public class Parser
 			if(debug == true){System.out.println("TRPAR error in fncall line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		return node;
 	}
@@ -1863,8 +1858,8 @@ public class Parser
 		}
 
 		//Consume token
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
+		
 
 		node.setLeft(temp);
 		node.setRight(prlist());
@@ -1881,8 +1876,8 @@ public class Parser
 			TreeNode node = new TreeNode(TreeNode.NSTRG);
 			StRec stRec = new StRec(currentToken.getStr());
 
-			currentToken = lookAhead;
-			lookAhead = scanner.nextToken();
+			currentToken = scanner.nextToken();
+			
 
 			node.setSymbol(stRec);
 			symbolTable.put(stRec.getName(), stRec);
