@@ -863,69 +863,114 @@ public class Parser
 
 		symbolTable.put(stRec.getName(), stRec);
 		currentToken = scanner.getToken();
-		
+
 		return node;
 	}
-
-	//<stype>       ::=  integer | real | boolean
 
 	//<stats>       ::=  <stat> ; <stats> | <strstat> <stats> | <stat>; | <strstat>
 	private TreeNode stats() throws IOException
 	{
-		String error = "Invalid statements declaration.";
-		//First non-terminal values expectede
-		int first[] = 
+		// <stat> or <strstat>
+		if(currentToken.value() == Token.TFOR || currentToken.value() == Token.TIFTH)
 		{
-			Token.TREPT, Token.TIDEN, Token.TINPT, Token.TPRIN, Token.TPRLN, Token.TRETN, Token.TFOR, Token.TIFTH
-		};
-
-		TreeNode node = new TreeNode(TreeNode.NSTATS);
-		TreeNode temp;
-
-		//Check for next token to decide which non-terminal to enter
-		//Enter strstat node
-		if (currentToken.value() == Token.TFOR || currentToken.value() == Token.TIFTH)
-		{
-			temp = strstat();
-			//Check if next node is stats or empty string
-			for (int i = 0; i < first.length; i++)
-			{
-				if (currentToken.value() == first[i])
-				{
-					node.setLeft(temp);
-					node.setRight(stats());
-					return node;
-				}
-			}
-			return temp;
+			TreeNode node = strstat();
+			return statsHelpFunc(node);
 		}
-		//Enter stat node
 		else
 		{
-			temp = stat();
-			//Check for semicolon token
-			if (!checkToken(Token.TSEMI, error + currentToken.getStr()))
+			TreeNode node = stat();
+			// needs a  TSEMI token
+			if(!checkToken(Token.TSEMI, "Invalid statements declaration: Expected a ';'." ))
 			{
-				if(debug == true){System.out.println("TSEMI error in stats line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-				return null;
+				return node;
 			}
 
-			currentToken = scanner.nextToken();
+			currentToken = scanner.getToken();
 			
-
-			//Check if next node is stats or empty string
-			for (int i = 0; i < first.length; i++)
-			{
-				if (currentToken.value() == first[i])
-				{
-					node.setLeft(temp);
-					node.setRight(stats());
-					return node;
-				}
-			}
-			return temp;
+			return statsHelpFunc(node);
 		}
 	}
+
+	// NSTATS
+	// <statsHelpFunc> ::=  <stats> | ε
+	private TreeNode statsHelpFunc(TreeNode node)
+	{
+		// stats: for or if or repeat or id or input or print or printline or return
+		// <stat> or <strstat>
+		if(currentToken.value() == Token.TFOR
+		|| currentToken.value() == Token.TIFTH
+		|| currentToken.value() == Token.TREPT
+		|| currentToken.value() == Token.TRETN
+		|| currentToken.value() == Token.TINPT
+		|| currentToken.value() == Token.TPRIN
+		|| currentToken.value() == Token.TPRLN
+		|| currentToken.value() == Token.TIDEN)
+		{
+			return new TreeNode(TreeNode.NSTATS, node, stats());
+		}
+		else
+		{
+			return node;
+		}
+	}
+	//<stype>       ::=  integer | real | boolean
+//	//<stats>       ::=  <stat> ; <stats> | <strstat> <stats> | <stat>; | <strstat>
+//	private TreeNode stats() throws IOException
+//	{
+//		String error = "Invalid statements declaration.";
+//		//First non-terminal values expectede
+//		int first[] = 
+//		{
+//			Token.TREPT, Token.TIDEN, Token.TINPT, Token.TPRIN, Token.TPRLN, Token.TRETN, Token.TFOR, Token.TIFTH
+//		};
+//
+//		TreeNode node = new TreeNode(TreeNode.NSTATS);
+//		TreeNode temp;
+//
+//		//Check for next token to decide which non-terminal to enter
+//		//Enter strstat node
+//		if (currentToken.value() == Token.TFOR || currentToken.value() == Token.TIFTH)
+//		{
+//			temp = strstat();
+//			//Check if next node is stats or empty string
+//			for (int i = 0; i < first.length; i++)
+//			{
+//				if (currentToken.value() == first[i])
+//				{
+//					node.setLeft(temp);
+//					node.setRight(stats());
+//					return node;
+//				}
+//			}
+//			return temp;
+//		}
+//		//Enter stat node
+//		else
+//		{
+//			temp = stat();
+//			//Check for semicolon token
+//			if (!checkToken(Token.TSEMI, error + currentToken.getStr()))
+//			{
+//				if(debug == true){System.out.println("TSEMI error in stats line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
+//				return null;
+//			}
+//
+//			currentToken = scanner.nextToken();
+//			
+//
+//			//Check if next node is stats or empty string
+//			for (int i = 0; i < first.length; i++)
+//			{
+//				if (currentToken.value() == first[i])
+//				{
+//					node.setLeft(temp);
+//					node.setRight(stats());
+//					return node;
+//				}
+//			}
+//			return temp;
+//		}
+//	}
 
 	//<strstat>     ::=  <forstat> | <ifstat>
 	private TreeNode strstat() throws IOException
