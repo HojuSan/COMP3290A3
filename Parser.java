@@ -341,124 +341,134 @@ public class Parser
 		return node;
 	}
 
+	//NRTYPE or NATYPE
 	//<type>        ::=  <structid> is <fields> end
 	//<type>        ::=  <typeid> is array [ <expr> ] of <structid>
 	private TreeNode type() throws IOException
 	{
-		String error = "Invalid struct or array declaration.";
+		String error = "Invalid struct or array declaration: ";
 		TreeNode node = new TreeNode(TreeNode.NUNDEF);
 		StRec stRec = new StRec();
+		StRec stRec2 = new StRec();
 
 		//Check for identifier token
-		if (!checkToken(Token.TIDEN, error))
+		if (!checkToken(Token.TIDEN, error+"Expected Type IDENTIFIER "))
 		{
 			if(debug == true){System.out.println("TIDEN error in type line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-			return null;
+			return node;
 		}
 		stRec.setName(currentToken.getStr());
 		currentToken = scanner.nextToken();
 		
-
-		node.setSymbol(stRec);
+		//node.setSymbol(stRec);
 
 		//Check for IS token
-		if (!checkToken(Token.TIS, error))
+		if (!checkToken(Token.TIS, error+ "Keyword missing, expecting an IS"))
 		{
 			if(debug == true){System.out.println("TIS error in type line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-			return null;
+			return node;
 		}
 		currentToken = scanner.nextToken();
 		
 
 		//Check if NRTYPE node
-		if (currentToken.value() != Token.TARAY)
+		if (currentToken.value() != Token.TARAY) // this is a struct
 		{
-			node.setValue(TreeNode.NRTYPE);
+			stRec.setType("Struct");
+			symbolTable.put(stRec.getName(), stRec);
+			node.setSymbol(stRec);
 			node.setLeft(fields());
 			//Check for end token
-			if (!checkToken(Token.TEND, error))
+			if (!checkToken(Token.TEND, error+"keyword missing, expecting 'END' "))
 			{
 				if(debug == true){System.out.println("TEND error in type line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-				return null;
+				return node;
 			}
 			currentToken = scanner.nextToken();
 			
-			stRec.setType("Struct");
-			symbolTable.put(stRec.getName(), stRec);
+			node.setValue(TreeNode.NRTYPE);
+			node.setType(stRec); // set node type
+			currentToken = scanner.getToken();
 			return node;
 		}
 		//Else NATYPE node
-		currentToken = scanner.nextToken();
-		
-
-		//Check for right bracket token
-		if (!checkToken(Token.TLBRK, error))
+		else //so this is a type
 		{
-			if(debug == true){System.out.println("TLBRK error in type line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-			return null;
+			currentToken = scanner.nextToken();
+			stRec.setType("Type");
+			symbolTable.put(stRec.getName(), stRec);
+			node.setSymbol(stRec);
+
+			//Check for right bracket token
+			if (!checkToken(Token.TLBRK, error+"missing a '[' "))
+			{
+				if(debug == true){System.out.println("TLBRK error in type line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
+				return node;
+			}
+
+			currentToken = scanner.nextToken();
+			node.setLeft(expr());
+	
+			//Check for left bracket token
+			if (!checkToken(Token.TRBRK, error"missing a ']' "))
+			{
+				if(debug == true){System.out.println("TRBRK error in type line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
+				return node;
+			}
+
+			currentToken = scanner.nextToken();
+	
+			//Check for Tof token
+			if (!checkToken(Token.TOF, error"Keyword missing: Expecting an 'OF' "))
+			{
+				if(debug == true){System.out.println("TOF error in type line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
+				return node;
+			}
+
+			currentToken = scanner.nextToken();
+			
+			//Check for identifier token
+			if (!checkToken(Token.TIDEN, error+"Expecting a Struct Identifier"))
+			{
+				if(debug == true){System.out.println("TIDEN error in type line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
+				return node;
+			}
+
+			//new type of stRec
+			stRec2.setName(currentToken.getStr());
+			stRec2.setType("Struct");
+			node.setType(stRec2);  // set node type
+			symbolTable.put(stRec2.getName(), stRec2);
+
+			//NATYPE node return
+			node.setValue(TreeNode.NATYPE);
+			currentToken = scanner.getToken();
+
+			return node;
 		}
-		currentToken = scanner.nextToken();
-		
-
-		node.setLeft(expr());
-
-		//Check for left bracket token
-		if (!checkToken(Token.TRBRK, error))
-		{
-			if(debug == true){System.out.println("TRBRK error in type line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-			return null;
-		}
-		currentToken = scanner.nextToken();
-		
-
-		//Check for of token
-		if (!checkToken(Token.TOF, error))
-		{
-			if(debug == true){System.out.println("TOF error in type line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-			return null;
-		}
-		currentToken = scanner.nextToken();
-		
-
-		//Check for identifier token
-		if (!checkToken(Token.TIDEN, error))
-		{
-			if(debug == true){System.out.println("TIDEN error in type line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-			return null;
-		}
-		currentToken = scanner.nextToken();
-		
-
-		stRec.setType("Type");
-		symbolTable.put(stRec.getName(), stRec);
-		return node;
 	}
 	
 	//<fields>      ::=  <sdecl> | <sdecl> , <fields>
 	private TreeNode fields() throws IOException
 	{
-		TreeNode node = new TreeNode(TreeNode.NFLIST);
 		TreeNode sdecll = sdecl();
 
-		if (currentToken.value() != Token.TCOMA)
+		//<sdecl> , <fields>
+		if (currentToken.value() == Token.TCOMA)
 		{
-			return sdecll;
+			currentToken = scanner.getToken();
+			return new TreeNode(TreeNode.NFLIST, sdecl, fields());
 		}
-		//Consume token
-		currentToken = scanner.nextToken();
-		
 
-		node.setLeft(sdecll);
-		node.setRight(fields());
-
-		return node;
+		//<sdecl>
+		return sdecl();
 	}
 
 	//<sdecl>       ::=  <id> : <stype>
 	private TreeNode sdecl() throws IOException
 	{
 		String error = "Invalid variable declaration.";
-		TreeNode node = new TreeNode(TreeNode.NSDECL);
+		TreeNode node = new TreeNode(TreeNode.NUNDEF);
 		StRec stRec = new StRec();
 		
 		//Check for identifier token
