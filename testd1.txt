@@ -10,9 +10,12 @@ CD19 testd1
 
 main
 
-x : real,
-y : real,
-z : real
+x : integer,
+y : integer,
+t : integer,
+u : integer,
+e : integer,
+z : integer
 
     begin
 

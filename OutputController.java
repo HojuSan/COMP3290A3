@@ -29,19 +29,33 @@ public class OutputController
 		this.inputStream = source;
 		this.listing = listing;
         this.errors = errors;
-        //set everything to zero, cause we ain't heathens that start at 1
-		currentLine = "  0: ";
+		currentLine = "  1: ";
 		errorLine = "";
-		line = 0;
+		line = 1;
 		charPos = 0;
 		errorCount = 0;
 		System.out.println();
 	}
 
-	//Read char by char from text file
-	public int readChar() throws IOException
+	public int getLine()
 	{
-		int c = inputStream.read();
+		return line;
+	}
+
+	public int getCharPos()
+	{
+		return charPos;
+	}
+
+	//Read char by char from text file
+	public int readChar() 
+	{
+		int c = -1;
+		try {
+			c = inputStream.read();
+		} catch (Exception e) {
+			//TODO: handle exception
+		}
 		
 		if ((char)c == '\n')
 		{
@@ -75,9 +89,9 @@ public class OutputController
 				listing.println();
 				listing.println(errors);
 				listing.println();
-				listing.println("Preorder Traversal before error:");
+				listing.println("Preorder Traversal:");
 				listing.println();
-				s+= "\n"+currentLine +"\n"+"!!!!Errors found: " + errorCount+"\n"+errors+"\n"+"Preorder Traversal before error:"+"\n";
+				s+= "\n"+currentLine +"\n"+"!!!!Errors found: " + errorCount+"\n"+errors+"\n"+"Preorder Traversal:"+"\n";
 			}
 			else
 			{
@@ -101,15 +115,23 @@ public class OutputController
 	}
 
 	//when errors occur reset the stream to continue lexical analysis
-	public void reset() throws IOException
+	public void reset() 
 	{
-		inputStream.reset();
+		try {
+			inputStream.reset();
+		} catch (Exception e) {
+			//TODO: handle exception
+		}
 	}
 
 	//marks the location, will probably need it during parsing
-	public void mark(int g) throws IOException
+	public void mark(int g) 
 	{
-		inputStream.mark(g);
+		try {
+			inputStream.mark(g);
+		} catch (Exception e) {
+			//TODO: handle exception
+		}
 	}
 
 	public int getErrorCount()
@@ -126,10 +148,11 @@ public class OutputController
 			errorLine += "\n";				// terminate line for previous error message
 		}
 
-		errorLine += errorLinePrint + msg;
+		//errorLine += errorLinePrint + msg;
+		errorLine += msg;
 		errorCount++;
 		//listing.println(errorLine);			//print the error above
-		errors.append(currentLine + "\n");
+		//errors.append(currentLine + "\n");
 		errors.append(errorLine + "\n");
 		errorLine = "";						// reset error message
 	}

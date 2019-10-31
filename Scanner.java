@@ -51,7 +51,7 @@ public class Scanner
 		if(debug == true){System.out.println("scanner");}
     }
 
-	public Token nextToken() throws IOException
+	public Token nextToken()
     {
 		boolean prevError = false;
         Token foundToken = null;

@@ -1,23 +1,112 @@
 Hello Dan
 
-For the Case !!!= there was a large amount of debate wether this was 
-1 token as !!!=
-2 tokens as !! !=
-3 tokens as ! ! !=
-I decided to do it as 3 tokens since in the CD19 Lexical structure Grammar print out 
+Files included in this assignment are 
+A3, Parser, Scanner, SymbolTable, StRec, Token, TreeNode, OutputController
 
-7. Other significant lexical items in CD19 are: semicolon (;) leftbracket ([)
-rightbracket (]) comma (,) leftparen ( ( ) rightparen ( ) ) equals (=) plus (+)
-minus (-) star (*) slash (/) percent (%) carat (^) less (<) greater (>) exclamation
-(!) quote (“) colon (:) dot (.)
+-if the terminal shows a null pointer exception, its not because the code is broken
+but its actually a feature....... (hahaha)if certain grammar exceptions occur, such as 
+cd19 token isn't in the structure it will return null. there are like 87ish exceptions that
+return null. It is a design flaw but currently I don't have the time to revisit and fix this issue
+as of now
 
-Hense I understood this as each time a token can't be completed it is seen as an individual token, 
-not clumped up together since that would require the code to read future tokens which a statemachine 
-cannot do. That was my reasoning
+-The printing is handled by the treenode printTree(), so its not
+as tidy as I would want it to be, but currently Ive dedicated to much
+time to it so I don't have the time to fix it.
 
-Then my friend sent the email so now it seperates !!!!= into !!! != for those juicy "Bonus points" haha
+-fixed the previous critiques in A1
 
-Outside that it runs on the school computers and it should run find with a 
-javac A1.java
-into a 
-java A1 test.txt
+-I don't really understand my parser. I made it but its weird. Some moments
+it will run butter smooth and prints the program listing preoder traversal and 
+error messages fine. And then for the same code with little to no modifications
+it will print out errors saying that the identified token is invalid when checking
+the actual token it is. Its 100% a design flaw but at this stage the error messages
+are confusing me the more i debug.
+
+-Within the Parser there is a debug boolean at the top if you wish to see 
+the custom made error msgs since I didn't include a few of the error messages
+
+into the the actual print out since the error checks are both used for prevention
+and actual errors and aren't really in acordance to the output. It is a design flaw
+so i included the printouts in a debug feature at the top. It has been turned on for 
+now so please keep that in mind when marking please.
+
+-no error recovery or correction has been attempted
+
+-Outside of that I am submitting this about 2 weeks later than the due date
+I poured my soul into this parser and its quite disheartening I couldn't get it to run
+the exact way I wanted it to oh wells.
+
+
+-format it should look like when the DanExample.txt file is run with debug turned to false
+
+-$ java A3 DanExample.txt
+
+
+  0: CD19 ExampleAST
+  1:
+  2:     main
+  3:
+  4:         i:integer,
+  5:         j:integer,
+  6:         k:integer
+  7:
+  8:     begin
+  9:
+ 10:         input i;
+ 11:         input j;
+ 12:         k = i + j;
+ 13:         printline k;
+ 14:
+ 15:     end
+ 16:
+ 17: CD19 ExampleAST
+
+Parser has finished
+
+Preorder Traversal:
+
+NPROG  ExampleAST NMAIN NSDLST NSDECL i NSDLST
+NSDECL j NSDECL k NSTATS NINPUT NSIMV
+i NSTATS NINPUT NSIMV  j NSTATS NASGN
+NSIMV  k NADD   NSIMV  i NSIMV  j
+NPRLN  NSIMV  k
+
+
+-format it should look like when the DanExample.txt file is run with debug turned to true
+
+-$ java A3 DanExample.txt
+
+---------------------------------------------------CheckToken Errors: 
+TCONS error in consts line: 4 charPos 10
+TTYPS error in types line: 4 charPos 10
+TARRS error in arrays line: 4 charPos 10
+TFUNC error in funcs line: 4 charPos 10
+
+  0: CD19 ExampleAST
+  1:
+  2:     main
+  3:
+  4:         i:integer,
+  5:         j:integer,
+  6:         k:integer
+  7:
+  8:     begin
+  9:
+ 10:         input i;
+ 11:         input j;
+ 12:         k = i + j;
+ 13:         printline k;
+ 14:
+ 15:     end
+ 16:
+ 17: CD19 ExampleAST
+
+Parser has finished
+
+Preorder Traversal:
+
+NPROG  ExampleAST NMAIN NSDLST NSDECL i NSDLST
+NSDECL j NSDECL k NSTATS NINPUT NSIMV
+i NSTATS NINPUT NSIMV  j NSTATS NASGN
+NSIMV  k NADD   NSIMV  i NSIMV  j
+NPRLN  NSIMV  k
