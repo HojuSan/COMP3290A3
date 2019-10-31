@@ -388,7 +388,7 @@ public class Parser
 			
 			node.setValue(TreeNode.NRTYPE);
 			node.setType(stRec); // set node type
-			currentToken = scanner.getToken();
+			currentToken = scanner.nextToken();
 			return node;
 		}
 		//Else NATYPE node
@@ -410,7 +410,7 @@ public class Parser
 			node.setLeft(expr());
 	
 			//Check for left bracket token
-			if (!checkToken(Token.TRBRK, error"missing a ']' "))
+			if (!checkToken(Token.TRBRK, error+"missing a ']' "))
 			{
 				if(debug == true){System.out.println("TRBRK error in type line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 				return node;
@@ -419,7 +419,7 @@ public class Parser
 			currentToken = scanner.nextToken();
 	
 			//Check for Tof token
-			if (!checkToken(Token.TOF, error"Keyword missing: Expecting an 'OF' "))
+			if (!checkToken(Token.TOF, error+"Keyword missing: Expecting an 'OF' "))
 			{
 				if(debug == true){System.out.println("TOF error in type line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 				return node;
@@ -442,7 +442,7 @@ public class Parser
 
 			//NATYPE node return
 			node.setValue(TreeNode.NATYPE);
-			currentToken = scanner.getToken();
+			currentToken = scanner.nextToken();
 
 			return node;
 		}
@@ -456,42 +456,41 @@ public class Parser
 		//<sdecl> , <fields>
 		if (currentToken.value() == Token.TCOMA)
 		{
-			currentToken = scanner.getToken();
-			return new TreeNode(TreeNode.NFLIST, sdecl, fields());
+			currentToken = scanner.nextToken();
+			return new TreeNode(TreeNode.NFLIST, sdecll, fields());
 		}
 
 		//<sdecl>
-		return sdecl();
+		return sdecll;
 	}
 
 	//<sdecl>       ::=  <id> : <stype>
 	private TreeNode sdecl() throws IOException
 	{
-		String error = "Invalid variable declaration.";
+		String error = "Invalid variable declaration: ";
 		TreeNode node = new TreeNode(TreeNode.NUNDEF);
 		StRec stRec = new StRec();
 		
 		//Check for identifier token
-		if (!checkToken(Token.TIDEN, error)) 
+		if (!checkToken(Token.TIDEN, error+"Expected valid Identifier")) 
 		{
 			if(debug == true){System.out.println("TIDEN error in sdecl line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-			return null;
+			return node;
 		}
+
 		stRec.setName(currentToken.getStr());
 		currentToken = scanner.nextToken();
 		
-
 		//Check for colon token
-		if (!checkToken(Token.TCOLN, error)) 
+		if (!checkToken(Token.TCOLN, error+ "expected a ':' ")) 
 		{
 			if(debug == true){System.out.println("TCOLN error in sdecl line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-			return null;
+			return node;
 		}
+
 		currentToken = scanner.nextToken();
 		
-
 		//Check for integer|real|boolean token
-
 		if (currentToken.value() == Token.TINTG)
 		{
 			stRec.setType("integer");
@@ -506,137 +505,141 @@ public class Parser
 		}
 		else
 		{
-			if (!checkToken(Token.TINTG, error)) 
+			if (!checkToken(Token.TINTG, error+"Incorrect expressions used")) 
 			{
 				if(debug == true){System.out.println("TINTG error in sdecl line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-				return null;
+				return node;
 			}
 		}
-		currentToken = scanner.nextToken();
-		
 
+		//setting NSDECL node
+		node.setValue(TreeNode.NSDECL);
 		node.setSymbol(stRec);
+		node.setType(stRec);
+
 		symbolTable.put(stRec.getName(), stRec);
+		currentToken = scanner.nextToken();
+
+		//returns NSDECL if everything goes well
 		return node;
 	}
 
 	//<arrdecls>    ::=  <arrdecl> | <arrdecl> , <arrdecls>
 	private TreeNode arrdecls() throws IOException
 	{
-		TreeNode node = new TreeNode(TreeNode.NALIST);
-		TreeNode arrdecimals = arrdecl();
+		TreeNode arrdecimal = arrdecl();
 
-		if (currentToken.value() != Token.TCOMA)
+		if (currentToken.value() == Token.TCOMA)
 		{
-			return arrdecimals;
+			currentToken = scanner.nextToken();
+
+			return new TreeNode(TreeNode.NALIST, arrdecimal, arrdecls());
 		}
 
-		//Consume token
-		currentToken = scanner.nextToken();
-		
-
-		node.setLeft(arrdecimals);
-		node.setRight(arrdecls());
-
-		return node;
+		return arrdecimal;
 	}
 
 	//<arrdecl>     ::=  <id> : <typeid>
 	private TreeNode arrdecl() throws IOException
 	{
-		String error = "Invalid array declaration.";
-		TreeNode node = new TreeNode(TreeNode.NARRD);
+		String error = "Invalid array declaration: ";
+		TreeNode node = new TreeNode(TreeNode.NUNDEF);
 		StRec stRec = new StRec();
 
 		//Check for identifier
-		if (!checkToken(Token.TIDEN, error))  
+		if (!checkToken(Token.TIDEN, error+"Expected valid Identifier"))  
 		{
 			if(debug == true){System.out.println("TIDEN error in arrdecl line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-			return null;
+			return node;
 		}
+
 		stRec.setName(currentToken.getStr());
 		currentToken = scanner.nextToken();
 		
-
 		//Check for colon token
-		if (!checkToken(Token.TCOLN, error))  
+		if (!checkToken(Token.TCOLN, error+"Expect ':' "))  
 		{
 			if(debug == true){System.out.println("TCOLN error in arrdecl line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-			return null;
+			return node;
 		}
+
 		currentToken = scanner.nextToken();
 		
-
-		if (!checkToken(Token.TIDEN, error))  
+		if (!checkToken(Token.TIDEN, error+"Expect TypeID name."))  
 		{
 			if(debug == true){System.out.println("TIDEN error in arrdecl line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-			return null;
+			return node;
 		}
-		stRec.setType(currentToken.getStr());
-		currentToken = scanner.nextToken();
-		
 
+		//setting node into arrdecimal then returning
+		node.setValue(TreeNode.NARRD);
+		stRec.setType(currentToken.getStr());
+		node.setType(stRec);
 		node.setSymbol(stRec);
+
+		//update symbol table
 		symbolTable.put(stRec.getName(), stRec);
+		currentToken = scanner.nextToken();
 
 		return node;
 	}
 
+	//debugging this is not fun......... at all
 	//<funcs> ::= <func> <funcs> | ε
 	private TreeNode func() throws IOException
 	{
-		String error = "Invalid function declaration";
-		TreeNode node = new TreeNode(TreeNode.NFUND);
+		String error = "Invalid function declaration: ";
+		TreeNode node = new TreeNode(TreeNode.NUNDEF);
 		StRec stRec = new StRec();
 
 		//no func, returns null
-		if (!checkToken(Token.TFUNC, error))  
+		if (!checkToken(Token.TFUNC, error+"Keyword missing: expecting FUNCTION"))  
 		{
 			if(debug == true){System.out.println("TFUNC error in func line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-			return null;
+			return node;
 		}
+
 		currentToken = scanner.nextToken();
 		
-
 		//no identifier returns null
-		if (!checkToken(Token.TIDEN, error))  
+		if (!checkToken(Token.TIDEN, error+"Expecting Identifier"))  
 		{
 			if(debug == true){System.out.println("TIDEN error in func line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-			return null;
+			return node;
 		}
+
 		stRec.setName(currentToken.getStr());
 		currentToken = scanner.nextToken();
 		
-
 		//no left parenthesis, return null
-		if (!checkToken(Token.TLPAR, error)) 
+		if (!checkToken(Token.TLPAR, error+"Missing a '('")) 
 		{
 			if(debug == true){System.out.println("TLPAR error in func line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-			return null;
+			return node;
 		}
-		currentToken = scanner.nextToken();
-		
 
+		currentToken = scanner.nextToken();
+		//setting the left bracket
 		node.setLeft(plist());
 
 		//Check for right paranthesis token
-		if (!checkToken(Token.TRPAR, error))  
+		if (!checkToken(Token.TRPAR, error+"Missing a ')'"))  
 		{
 			if(debug == true){System.out.println("TRPAR error in func line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-			return null;
+			return node;
 		}
+
 		currentToken = scanner.nextToken();
 		
-
 		//Check for colon token
-		if (!checkToken(Token.TCOLN, error))  
+		if (!checkToken(Token.TCOLN, error+"Missing a ':'"))  
 		{
 			if(debug == true){System.out.println("TCOLN error in func line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-			return null;
+			return node;
 		}
+
 		currentToken = scanner.nextToken();
 		
-
 		//Check for rtype
 		if (currentToken.value() == Token.TINTG)
 		{
@@ -652,43 +655,47 @@ public class Parser
 		}
 		else if (currentToken.value() == Token.TVOID)  
 		{
+			//I HATE COMPILER DESIGN BECAUSE I CANNOT EAT SLEEP OR SHIT WITHOUT 
+			//THINKING OF WHY AM I DOING THIS TO MYSELF
 			stRec.setType("void");
 		}
 		else
 		{
-			if (!checkToken(Token.TINTG, error))  
+			if (!checkToken(Token.TINTG, error+"invalid Expression used to describe func"))  
 			{
 				if(debug == true){System.out.println("TTNTG error in func line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-				return null;
+				currentToken = scanner.nextToken();
+				return node;
 			}
 		}
-		currentToken = scanner.nextToken();
 		
-
+		//setting the locals if it isn't an rtype
+		currentToken = scanner.getToken();
+		symbolTable.put(stRec.getName(), stRec);
 		node.setMiddle(locals());
 
 		//Check for begin token
-		if (!checkToken(Token.TBEGN, error))  
+		if (!checkToken(Token.TBEGN, error+"Missing a BEGIN"))  
 		{
 			if(debug == true){System.out.println("TBEGN error in func line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-			return null;
+			return node;
 		}
-		currentToken = scanner.nextToken();
-		
 
+		currentToken = scanner.nextToken();
 		node.setRight(stats());
 
 		//Check for end token
-		if (!checkToken(Token.TEND, error))  
+		if (!checkToken(Token.TEND, error+"Missing an Happily ever after sorta END"))  
 		{
 			if(debug == true){System.out.println("TEND error in func line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-			return null;
+			return node;
 		}
-		currentToken = scanner.nextToken();
-		
 
+		//returning the NFUND
+		node.setValue(TreeNode.NFUND);
+		currentToken = scanner.getToken();
 		node.setSymbol(stRec);
-		symbolTable.put(stRec.getName(), stRec);
+		node.setType(stRec); 
 
 		return node;
 	}
@@ -700,50 +707,46 @@ public class Parser
 		{
 			return params();
 		}
-		else
-		{
-			if(debug == true){System.out.println("non error: plist threw ε line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-			return null;
-		}
+
+		if(debug == true){System.out.println("non error: plist threw ε line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
+		//return node;		//should be throwing null i think		
+		return null;
 	}
 
 	//<params>      ::=  <param> , <params> | <param>
 	private	TreeNode params() throws IOException
 	{
-		TreeNode node = new TreeNode(TreeNode.NPLIST);
 		TreeNode parameter = param();
 
-		if (currentToken.value() != Token.TCOMA)
+		if (currentToken.value() == Token.TCOMA)
 		{
-			return parameter;
+			currentToken = scanner.getToken();
+
+			return new TreeNode(TreeNode.NPLIST, parameter, params());
 		}
 
-		//Consume token
-		currentToken = scanner.nextToken();
-		
-
-		node.setLeft(parameter);
-		node.setRight(params());
-
-		return node;
+		return parameter;
 	}
 
 	//<param>       ::=  <sdecl> | <arrdecl> | const <arrdecl>
 	private TreeNode param() throws IOException
 	{
 		TreeNode node = new TreeNode(TreeNode.NUNDEF);
+
 		if (currentToken.value() == Token.TCONS)
 		{
 			//Consume token
 			currentToken = scanner.nextToken();
-			
-
+			//set node to ARRC instead of undefined
 			node.setValue(TreeNode.NARRC);
 			node.setLeft(arrdecl());
+
 			return node;
 		}
 
+		//The value should either be NSIMP or NARRP
 		TreeNode check = decl();
+
 		if (check.getValue() == TreeNode.NARRD)
 		{
 			node.setValue(TreeNode.NARRP);
@@ -755,7 +758,7 @@ public class Parser
 		else
 		{
 			if(debug == true){System.out.println("non error: param returning null line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-			return null;
+			return node;
 		}
 		node.setLeft(check);
 		return node;
@@ -779,87 +782,88 @@ public class Parser
 	//<dlist>       ::=  <decl> | <decl> , <dlist>
 	private TreeNode dlist() throws IOException
 	{
-		TreeNode node = new TreeNode(TreeNode.NDLIST);
 		TreeNode decimal = decl();
 
-		if (currentToken.value() != Token.TCOMA)
+		if (currentToken.value() == Token.TCOMA)
 		{
-			return decimal;
+			currentToken = scanner.getToken();
+
+			return new TreeNode(TreeNode.NDLIST, decimal, dlist());
 		}
 
-		currentToken = scanner.nextToken();
-		
-
-		node.setLeft(decimal);
-		node.setRight(dlist());
-
-		return node;
+		return decimal;
 	}
 
 	//<decl>        ::=  <sdecl> | <arrdecl>
+	//NSDECL $ NARRD
 	private TreeNode decl() throws IOException
 	{
-		String error = "Invalid array or variable declaration.";
+		String error = "Invalid array or variable declaration: ";
 		TreeNode node = new TreeNode(TreeNode.NUNDEF);
 		StRec stRec = new StRec();
-
-		System.out.println("==============the node is:");
-		//Check for identifier token
-		if (!checkToken(Token.TIDEN, error)) 
-		{
-			if(debug == true){System.out.println("TIDEN error in decl line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-			return null;
-		}
 		stRec.setName(currentToken.getStr());
 		currentToken = scanner.nextToken();
-		
-
+//Switched around colon and identifier!!!!
 		//Check for colon token
-		if (!checkToken(Token.TCOLN, error)) 
+		if (!checkToken(Token.TCOLN, error+"Missing a ':' ")) 
 		{
 			if(debug == true){System.out.println("TCOLN error in decl line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-			return null;
+			return node;
 		}
-		currentToken = scanner.nextToken();
-		
 
-		//Check for rtype
-		if (currentToken.value() == Token.TINTG)
+		currentToken = scanner.nextToken();
+
+		//Check for identifier token
+		if (currentToken.value() == Token.TIDEN) 
 		{
-			node.setValue(TreeNode.NSDECL);
-			stRec.setType("integer");
-		}
-		else if (currentToken.value() == Token.TREAL)
-		{
-			node.setValue(TreeNode.NSDECL);
-			stRec.setType("real");
-		}
-		else if (currentToken.value() == Token.TBOOL)
-		{
-			node.setValue(TreeNode.NSDECL);
-			stRec.setType("boolean");
-		}
-		else if (currentToken.value() == Token.TIDEN)  
-		{
+			// NARRD
 			node.setValue(TreeNode.NARRD);
 			stRec.setType(currentToken.getStr());
 		}
-		else
+		else	// NSDECL
 		{
-			System.out.println("==============the node is:"+node.getString());
-			if (!checkToken(Token.TINTG, error)) 
+			//Check for rtype
+			if (currentToken.value() == Token.TINTG)
 			{
-				if(debug == true){System.out.println("TINTG error in decl line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
-				System.out.println("the node is:"+node.getString());
-				return node;
+				//node.setValue(TreeNode.NSDECL);
+				stRec.setType("integer");
 			}
+			else if (currentToken.value() == Token.TREAL)
+			{
+				//node.setValue(TreeNode.NSDECL);
+				stRec.setType("real");
+			}
+			else if (currentToken.value() == Token.TBOOL)
+			{
+				//node.setValue(TreeNode.NSDECL);
+				stRec.setType("boolean");
+			}
+//			else if (currentToken.value() == Token.TIDEN)  
+//			{
+//				node.setValue(TreeNode.NARRD);
+//				stRec.setType(currentToken.getStr());
+//			}
+			else
+			{
+				if (!checkToken(Token.TINTG, error+"Incorrect expression used for decl()")) 
+				{
+					if(debug == true){System.out.println("TINTG error in decl line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
+					currentToken = scanner.nextToken();
+					//System.out.println("the node is:"+node.getString());
+					return node;
+				}
+			}
+			//setting the node here
+			node.setValue(TreeNode.NSDECL);
 		}
-		System.out.println("----the node is:"+node.getString());
-		currentToken = scanner.nextToken();
-		
-		node.setSymbol(stRec);
-		symbolTable.put(stRec.getName(), stRec);
 
+		//System.out.println("----the node is:"+node.getString());
+		node.setType(stRec);
+		node.setSymbol(stRec);
+
+		symbolTable.put(stRec.getName(), stRec);
+		currentToken = scanner.getToken();
+		
 		return node;
 	}
 
@@ -1101,7 +1105,7 @@ public class Parser
 		TreeNode node = new TreeNode(TreeNode.NASGNS);
 		TreeNode temp = asgnstat();
 
-		if (currentToken.value() != Token.TCOMA)
+		if (currentToken.value() == Token.TCOMA)
 		{
 			return temp;
 		}
@@ -1372,7 +1376,7 @@ public class Parser
 		TreeNode node = new TreeNode(TreeNode.NVLIST);
 		TreeNode temp = var();
 
-		if (currentToken.value() != Token.TCOMA)
+		if (currentToken.value() == Token.TCOMA)
 		{
 			return temp;
 		}
@@ -1456,7 +1460,7 @@ public class Parser
 		TreeNode node = new TreeNode(TreeNode.NEXPL);
 		TreeNode temp = bool();
 
-		if (currentToken.value() != Token.TCOMA)
+		if (currentToken.value() == Token.TCOMA)
 		{
 			return temp;
 		}
@@ -1838,7 +1842,7 @@ public class Parser
 		currentToken = scanner.nextToken();
 		
 
-		if (currentToken.value() != Token.TRPAR)
+		if (currentToken.value() == Token.TRPAR)
 		{
 			node.setLeft(elist());
 		}
@@ -1862,7 +1866,7 @@ public class Parser
 		TreeNode temp = printitem();
 
 		//System.out.println("meep1");
-		if (currentToken.value() != Token.TCOMA)
+		if (currentToken.value() == Token.TCOMA)
 		{
 			return temp;
 		}
