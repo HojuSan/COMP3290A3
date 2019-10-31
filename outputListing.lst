@@ -1,0 +1,39 @@
+  0: /--d) several that you expect to run successfully when later compiled by your compiler (and also part 3).
+  1:   1: /--These should include at least one that just has a main program and simple variables,
+  2:   2: /--one that has arrays, and one that has function(s)/procedure(s) using all three methods
+  3:   3: /--of parameter passing that are allowed in CD19. (3)
+  4:   4: /--<program> ::= CD19 <id> <consts> <types> <arrays> <funcs> <mainbody>
+  5:   5: /--<mainbody> ::= main <slist> begin <stats> end CD19 <id>
+  6:   6: 
+  7:   7: /--instantiates 3 floats pluses x and y and prints out the result
+  8:   8: CD19 testd1
+  9:   9: 
+ 10:  10: main
+ 11:  11: 
+ 12:  12: x : real,
+ 13:  13: y : real,
+ 14:  14: z : real
+ 15:  15: 
+ 16:  16:     begin
+ 17:  17: 
+ 18:  18:     /--    x = 1 ;
+ 19:  19:     /--    y = 2 ;
+ 20:  20:     /--    x+y = z ;
+ 21:  21:     /--
+ 22:  22:     /--    printline z ;
+ 23:  23: 
+ 24:  24:     end
+ 25: 
+ 25: CD19 testd1
+!!!!Errors found: 2
+ 25: CD19 
+ At Line 25: Syntax Error: Invalid statement declaration.
+ 25: CD19 
+ At Line 25: Syntax Error: Invalid statements declaration.null
+
+Preorder Traversal before error:
+NPROG  testd1 NMAIN  NSDLST NSDECL x      
+NSDLST       NSDECL y      
+NSDECL z     
+
+

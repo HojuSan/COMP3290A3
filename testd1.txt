@@ -14,14 +14,13 @@ x : real,
 y : real,
 z : real
 
-begin
+    begin
 
-/--    x = 1 ;
-/--    y = 2 ;
-/--    x+y = z ;
-/--
-/--    printline z ;
+    /--    x = 1 ;
+    /--    y = 2 ;
+    /--    x+y = z ;
+    /--
+    /--    printline z ;
 
-end
-
+    end
 CD19 testd1

@@ -18,7 +18,7 @@ public class Parser
 	private Token lookAhead;				//Lookahead toekn for LL(1)
 	private OutputController outPut;		//Output controller reference
 	private SymbolTable symbolTable;
-	private boolean debug = false;
+	private boolean debug = true;
 
     //Constructor
 	public Parser(OutputController outputController)
@@ -35,36 +35,42 @@ public class Parser
 	public TreeNode program() throws IOException
 	{
 		String error = "Invalid program structure.";
-		TreeNode node = new TreeNode(TreeNode.NPROG);
+		TreeNode node = new TreeNode(TreeNode.NUNDEF);
 		StRec stRec = new StRec();
+
+		if(debug == true){System.out.println("---------------------------------------------------CheckToken Errors: ");}
 		
 		//Checks for the cd19 token
 		currentToken = scanner.nextToken();
-		lookAhead = scanner.nextToken();
 
-		if (!checkToken(Token.TCD19, error)) 
+		if (!checkToken(Token.TCD19, "Missing CD19 Token")) 
 		{
-			if(debug == true){System.out.println("TCD19 error in program");}
-			return null;
+			if(debug == true){System.out.println("TCD19 error in program line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
+			return node;
 		}
 
 		//checks for the identifier token
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
-		if (!checkToken(Token.TIDEN, error))
+		currentToken = scanner.nextToken();
+
+		if (!checkToken(Token.TIDEN, "Invalid TIDEN Token"))
 		{
-			if(debug == true){System.out.println("TIDEN error in program");}
-			return null;
+			if(debug == true){System.out.println("TIDEN error in program line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
+			return node;
 		} 
+
 		stRec.setName(currentToken.getStr());
 
-		//uses the token then moves to the next
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
-
 		//adds the new requirement to the symbol table,
-		node.setSymbol(stRec);
+		stRec.setType("CD19");
+		node.setType(stRec);
 		symbolTable.put(stRec.getName(), stRec);
+
+		//uses the token then moves to the next
+		currentToken = scanner.nextToken();
+
+		//Add to symbol table
+		node.setValue(TreeNode.NPROG);
+		node.setSymbol(stRec);
 
 		//setting the nodes within the tree
 		//learning linkedlists and nodes was useful
@@ -78,7 +84,7 @@ public class Parser
 	//Globals, set to the left side
 	private TreeNode globals() throws IOException
 	{
-		TreeNode node = new TreeNode(TreeNode.NGLOB);
+		TreeNode node = new TreeNode(TreeNode.NGLOB, consts(), types(), arrays());
 
 		node.setLeft(consts());
 		node.setMiddle(types());
@@ -99,12 +105,11 @@ public class Parser
 	{
 		if (currentToken.value() != Token.TCONS)
 		{
-			if(debug == true){System.out.println("TCONS error in consts");}
+			if(debug == true){System.out.println("TCONS error in consts line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		//Consume token
-		currentToken = lookAhead;
-		lookAhead = scanner.nextToken();
+		currentToken = scanner.nextToken();
 
 		return initlist();
 	}
@@ -142,7 +147,7 @@ public class Parser
 		//check identifier
 		if (!checkToken(Token.TIDEN, error))
 		{
-			if(debug == true){System.out.println("TIDEN error in init");}
+			if(debug == true){System.out.println("TIDEN error in init line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 
@@ -153,7 +158,7 @@ public class Parser
 		//check equals token
 		if (!checkToken(Token.TEQUL, error)) 
 		{
-			if(debug == true){System.out.println("TEQUL error in init");}
+			if(debug == true){System.out.println("TEQUL error in init line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 
@@ -172,7 +177,7 @@ public class Parser
 	{
 		if (currentToken.value() != Token.TTYPS)
 		{
-			if(debug == true){System.out.println("TTYPS error in types");}
+			if(debug == true){System.out.println("TTYPS error in types line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 
@@ -188,7 +193,7 @@ public class Parser
 	{
 		if (currentToken.value() != Token.TARRS)
 		{
-			if(debug == true){System.out.println("TARRS error in arrays");}
+			if(debug == true){System.out.println("TARRS error in arrays line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 
@@ -208,7 +213,7 @@ public class Parser
 		//if there is nothing just don't return it
 		if (currentToken.value() != Token.TFUNC)
 		{
-			if(debug == true){System.out.println("TFUNC error in funcs");}
+			if(debug == true){System.out.println("TFUNC error in funcs line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 
@@ -228,11 +233,12 @@ public class Parser
 		String error = "Invalid mainbody format.";
 		TreeNode node = new TreeNode(TreeNode.NMAIN);
 
+		//System.out.println("main "+outPut.getLine()+"charPos"+outPut.getCharPos());
 		//checks for the main token
 		if (!checkToken(Token.TMAIN, error))
 		{
-			if(debug == true){System.out.println("TMAIN error in mainbody");}
-			return null;
+			if(debug == true){System.out.println("TMAIN error in mainbody line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
+			//return null;
 		}
 
 		currentToken = lookAhead;
@@ -241,11 +247,12 @@ public class Parser
 		//Enters left node
 		node.setLeft(slist());
 
+		//System.out.println("begin "+outPut.getLine()+"charPos"+outPut.getCharPos());
 		//checks for the begin token
 		if (!checkToken(Token.TBEGN, error))
 		{
-			if(debug == true){System.out.println("TBEGN error in mainbody");}
-			return null;
+			if(debug == true){System.out.println("TBEGN error in mainbody line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
+			//return null;
 		}
 
 		currentToken = lookAhead;
@@ -254,40 +261,47 @@ public class Parser
 		//Enters right node
 		node.setRight(stats());
 
+		//System.out.println("end "+outPut.getLine()+"charPos"+outPut.getCharPos());
+		//System.out.println("above TEND "+currentToken.getStr()+" token value is "+currentToken.debugString() +lookAhead.getStr());
 		//Checks for end token
 		if (!checkToken(Token.TEND, error))
 		{
-			if(debug == true){System.out.println("TEND error in mainbody");}
-			return null;
+			if(debug == true){System.out.println("TEND error in mainbody line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
+			//return null;
 		}
 
 		currentToken = lookAhead;
 		lookAhead = scanner.nextToken();
 
+		//System.out.println("cd19 "+outPut.getLine()+"charPos"+outPut.getCharPos());
 		//Checks for CD19 token
 		if (!checkToken(Token.TCD19, error))
 		{
-			if(debug == true){System.out.println("TCD19 error in mainbody");}
-			return null;
+			if(debug == true){System.out.println("TCD19 error in mainbody line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
+			//return null;
 		}
 
 		currentToken = lookAhead;
 		lookAhead = scanner.nextToken();
 
+
+		//System.out.println("above tiden "+currentToken.getStr()+" token value is "+currentToken.debugString() +lookAhead.getStr());
+		//System.out.println(outPut.getLine()+"charPos"+outPut.getCharPos());
 		//Check for identifier token
 		if (!checkToken(Token.TIDEN, error))
 		{
-			if(debug == true){System.out.println("TIDEN error in mainbody");}
-			return null;
+			if(debug == true){System.out.println("TIDEN error in mainbody line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
+			//return null;
 		}
 		
 		//Check for EOF token
 		currentToken = lookAhead;
 
+		//System.out.println(outPut.getLine()+"charPos"+outPut.getCharPos());
 		if (!checkToken(Token.TEOF, error))
 		{
-			if(debug == true){System.out.println("TEOF error in mainbody");}
-			return null;
+			if(debug == true){System.out.println("TEOF error in mainbody line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
+			//return null;
 		}
 
 		return node;
@@ -343,7 +357,7 @@ public class Parser
 		//Check for identifier token
 		if (!checkToken(Token.TIDEN, error))
 		{
-			if(debug == true){System.out.println("TIDEN error in type");}
+			if(debug == true){System.out.println("TIDEN error in type line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		stRec.setName(currentToken.getStr());
@@ -355,7 +369,7 @@ public class Parser
 		//Check for IS token
 		if (!checkToken(Token.TIS, error))
 		{
-			if(debug == true){System.out.println("TIS error in type");}
+			if(debug == true){System.out.println("TIS error in type line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -369,7 +383,7 @@ public class Parser
 			//Check for end token
 			if (!checkToken(Token.TEND, error))
 			{
-				if(debug == true){System.out.println("TEND error in type");}
+				if(debug == true){System.out.println("TEND error in type line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 				return null;
 			}
 			currentToken = lookAhead;
@@ -385,7 +399,7 @@ public class Parser
 		//Check for right bracket token
 		if (!checkToken(Token.TLBRK, error))
 		{
-			if(debug == true){System.out.println("TLBRK error in type");}
+			if(debug == true){System.out.println("TLBRK error in type line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -396,7 +410,7 @@ public class Parser
 		//Check for left bracket token
 		if (!checkToken(Token.TRBRK, error))
 		{
-			if(debug == true){System.out.println("TRBRK error in type");}
+			if(debug == true){System.out.println("TRBRK error in type line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -405,7 +419,7 @@ public class Parser
 		//Check for of token
 		if (!checkToken(Token.TOF, error))
 		{
-			if(debug == true){System.out.println("TOF error in type");}
+			if(debug == true){System.out.println("TOF error in type line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -414,7 +428,7 @@ public class Parser
 		//Check for identifier token
 		if (!checkToken(Token.TIDEN, error))
 		{
-			if(debug == true){System.out.println("TIDEN error in type");}
+			if(debug == true){System.out.println("TIDEN error in type line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -455,7 +469,7 @@ public class Parser
 		//Check for identifier token
 		if (!checkToken(Token.TIDEN, error)) 
 		{
-			if(debug == true){System.out.println("TIDEN error in sdecl");}
+			if(debug == true){System.out.println("TIDEN error in sdecl line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		stRec.setName(currentToken.getStr());
@@ -465,7 +479,7 @@ public class Parser
 		//Check for colon token
 		if (!checkToken(Token.TCOLN, error)) 
 		{
-			if(debug == true){System.out.println("TCOLN error in sdecl");}
+			if(debug == true){System.out.println("TCOLN error in sdecl line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -489,7 +503,7 @@ public class Parser
 		{
 			if (!checkToken(Token.TINTG, error)) 
 			{
-				if(debug == true){System.out.println("TINTG error in sdecl");}
+				if(debug == true){System.out.println("TINTG error in sdecl line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 				return null;
 			}
 		}
@@ -532,7 +546,7 @@ public class Parser
 		//Check for identifier
 		if (!checkToken(Token.TIDEN, error))  
 		{
-			if(debug == true){System.out.println("TIDEN error in arrdecl");}
+			if(debug == true){System.out.println("TIDEN error in arrdecl line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		stRec.setName(currentToken.getStr());
@@ -542,7 +556,7 @@ public class Parser
 		//Check for colon token
 		if (!checkToken(Token.TCOLN, error))  
 		{
-			if(debug == true){System.out.println("TCOLN error in arrdecl");}
+			if(debug == true){System.out.println("TCOLN error in arrdecl line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -550,7 +564,7 @@ public class Parser
 
 		if (!checkToken(Token.TIDEN, error))  
 		{
-			if(debug == true){System.out.println("TIDEN error in arrdecl");}
+			if(debug == true){System.out.println("TIDEN error in arrdecl line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		stRec.setType(currentToken.getStr());
@@ -573,7 +587,7 @@ public class Parser
 		//no func, returns null
 		if (!checkToken(Token.TFUNC, error))  
 		{
-			if(debug == true){System.out.println("TFUNC error in func");}
+			if(debug == true){System.out.println("TFUNC error in func line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -582,7 +596,7 @@ public class Parser
 		//no identifier returns null
 		if (!checkToken(Token.TIDEN, error))  
 		{
-			if(debug == true){System.out.println("TIDEN error in func");}
+			if(debug == true){System.out.println("TIDEN error in func line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		stRec.setName(currentToken.getStr());
@@ -592,7 +606,7 @@ public class Parser
 		//no left parenthesis, return null
 		if (!checkToken(Token.TLPAR, error)) 
 		{
-			if(debug == true){System.out.println("TLPAR error in func");}
+			if(debug == true){System.out.println("TLPAR error in func line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -603,7 +617,7 @@ public class Parser
 		//Check for right paranthesis token
 		if (!checkToken(Token.TRPAR, error))  
 		{
-			if(debug == true){System.out.println("TRPAR error in func");}
+			if(debug == true){System.out.println("TRPAR error in func line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -612,7 +626,7 @@ public class Parser
 		//Check for colon token
 		if (!checkToken(Token.TCOLN, error))  
 		{
-			if(debug == true){System.out.println("TCOLN error in func");}
+			if(debug == true){System.out.println("TCOLN error in func line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -639,7 +653,7 @@ public class Parser
 		{
 			if (!checkToken(Token.TINTG, error))  
 			{
-				if(debug == true){System.out.println("TTNTG error in func");}
+				if(debug == true){System.out.println("TTNTG error in func line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 				return null;
 			}
 		}
@@ -651,7 +665,7 @@ public class Parser
 		//Check for begin token
 		if (!checkToken(Token.TBEGN, error))  
 		{
-			if(debug == true){System.out.println("TBEGN error in func");}
+			if(debug == true){System.out.println("TBEGN error in func line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -662,7 +676,7 @@ public class Parser
 		//Check for end token
 		if (!checkToken(Token.TEND, error))  
 		{
-			if(debug == true){System.out.println("TEND error in func");}
+			if(debug == true){System.out.println("TEND error in func line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -683,7 +697,7 @@ public class Parser
 		}
 		else
 		{
-			if(debug == true){System.out.println("non error: plist threw ε");}
+			if(debug == true){System.out.println("non error: plist threw ε line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 	}
@@ -735,7 +749,7 @@ public class Parser
 		}
 		else
 		{
-			if(debug == true){System.out.println("non error: param returning null");}
+			if(debug == true){System.out.println("non error: param returning null line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		node.setLeft(check);
@@ -750,7 +764,7 @@ public class Parser
 	{
 		if (currentToken.value() != Token.TIDEN)
 		{
-			if(debug == true){System.out.println("non error: locals returning null");}
+			if(debug == true){System.out.println("non error: locals returning null line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 
@@ -784,10 +798,11 @@ public class Parser
 		TreeNode node = new TreeNode(TreeNode.NUNDEF);
 		StRec stRec = new StRec();
 
+		System.out.println("==============the node is:");
 		//Check for identifier token
 		if (!checkToken(Token.TIDEN, error)) 
 		{
-			if(debug == true){System.out.println("TIDEN error in decl");}
+			if(debug == true){System.out.println("TIDEN error in decl line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		stRec.setName(currentToken.getStr());
@@ -797,7 +812,7 @@ public class Parser
 		//Check for colon token
 		if (!checkToken(Token.TCOLN, error)) 
 		{
-			if(debug == true){System.out.println("TCOLN error in decl");}
+			if(debug == true){System.out.println("TCOLN error in decl line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -826,12 +841,15 @@ public class Parser
 		}
 		else
 		{
+			System.out.println("==============the node is:"+node.getString());
 			if (!checkToken(Token.TINTG, error)) 
 			{
-				if(debug == true){System.out.println("TINTG error in decl");}
-				return null;
+				if(debug == true){System.out.println("TINTG error in decl line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
+				System.out.println("the node is:"+node.getString());
+				return node;
 			}
 		}
+		System.out.println("----the node is:"+node.getString());
 		currentToken = lookAhead;
 		lookAhead = scanner.nextToken();
 		node.setSymbol(stRec);
@@ -879,7 +897,7 @@ public class Parser
 			//Check for semicolon token
 			if (!checkToken(Token.TSEMI, error + currentToken.getStr()))
 			{
-				if(debug == true){System.out.println("TSEMI error in stats");}
+				if(debug == true){System.out.println("TSEMI error in stats line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 				return null;
 			}
 
@@ -937,7 +955,7 @@ public class Parser
 		{
 			if (!checkToken(Token.TIDEN, error)) 
 			{
-				if(debug == true){System.out.println("TIDEN error in stat");}
+				if(debug == true){System.out.println("TIDEN error in stat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 				return null;
 			}
 			if (lookAhead.value() == Token.TLPAR)
@@ -959,7 +977,7 @@ public class Parser
 		//Check for For token
 		if (!checkToken(Token.TFOR, error))
 		{
-			if(debug == true){System.out.println("TFOR error in forstat");}
+			if(debug == true){System.out.println("TFOR error in forstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -968,7 +986,7 @@ public class Parser
 		//Check for left paranthesis
 		if (!checkToken(Token.TLPAR, error)) 
 		{
-			if(debug == true){System.out.println("TLPAR error in forstat");}
+			if(debug == true){System.out.println("TLPAR error in forstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -979,7 +997,7 @@ public class Parser
 		//Check for semicolon token
 		if (!checkToken(Token.TSEMI, error))
 		{
-			if(debug == true){System.out.println("TSEMI error in forstat");}
+			if(debug == true){System.out.println("TSEMI error in forstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -990,7 +1008,7 @@ public class Parser
 		//Check for right paranthesis
 		if (!checkToken(Token.TRPAR, error))
 		{
-			if(debug == true){System.out.println("TRPAR error in forstat");}
+			if(debug == true){System.out.println("TRPAR error in forstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -1001,7 +1019,7 @@ public class Parser
 		//Check for end
 		if (!checkToken(Token.TEND, error)) 
 		{
-			if(debug == true){System.out.println("TEND error in forstat");}
+			if(debug == true){System.out.println("TEND error in forstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -1019,7 +1037,7 @@ public class Parser
 		//Check for repeat token
 		if (!checkToken(Token.TREPT, error))
 		{
-			if(debug == true){System.out.println("TREPT error in repstat");}
+			if(debug == true){System.out.println("TREPT error in repstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -1028,7 +1046,7 @@ public class Parser
 		//Check for left paranthesis
 		if (!checkToken(Token.TLPAR, error)) 
 		{
-			if(debug == true){System.out.println("TLPAR error in repstat");}
+			if(debug == true){System.out.println("TLPAR error in repstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -1039,7 +1057,7 @@ public class Parser
 		//Check for right paranthesis
 		if (!checkToken(Token.TRPAR, error)) 
 		{
-			if(debug == true){System.out.println("TRPAR error in repstat");}
+			if(debug == true){System.out.println("TRPAR error in repstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -1050,7 +1068,7 @@ public class Parser
 		//Check for until
 		if (!checkToken(Token.TUNTL, error))
 		{
-			if(debug == true){System.out.println("TUNTL error in repstat");}
+			if(debug == true){System.out.println("TUNTL error in repstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -1066,7 +1084,7 @@ public class Parser
 	{
 		if (currentToken.value() != Token.TIDEN)
 		{
-			if(debug == true){System.out.println("non error: asgnlist returning null");}
+			if(debug == true){System.out.println("non error: asgnlist returning null line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		return alist();
@@ -1102,7 +1120,7 @@ public class Parser
 		//Check for IF token
 		if (!checkToken(Token.TIFTH, error)) 
 		{
-			if(debug == true){System.out.println("TIFTH error in ifstat");}
+			if(debug == true){System.out.println("TIFTH error in ifstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		lookAhead = scanner.nextToken();
@@ -1110,7 +1128,7 @@ public class Parser
 		//Check for left paranthesis
 		if (!checkToken(Token.TLPAR, error)) 
 		{
-			if(debug == true){System.out.println("TLPAR error in ifstat");}
+			if(debug == true){System.out.println("TLPAR error in ifstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -1121,7 +1139,7 @@ public class Parser
 		//Check for right paranthesis
 		if (!checkToken(Token.TRPAR, error))
 		{
-			if(debug == true){System.out.println("TRPAR error in ifstat");}
+			if(debug == true){System.out.println("TRPAR error in ifstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -1144,9 +1162,10 @@ public class Parser
 			//Check for else
 			if (!checkToken(Token.TELSE, error)) 
 			{
-				if(debug == true){System.out.println("TELSE error in ifstat");}
+				if(debug == true){System.out.println("TELSE error in ifstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 				return null;
 			}
+	
 			currentToken = lookAhead;
 			lookAhead = scanner.nextToken();
 
@@ -1155,7 +1174,7 @@ public class Parser
 			//Check for end
 			if (!checkToken(Token.TEND, error))
 			{
-				if(debug == true){System.out.println("TEND error in ifstat");}
+				if(debug == true){System.out.println("TEND error in ifstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 				return null;
 			}
 			currentToken = lookAhead;
@@ -1219,7 +1238,7 @@ public class Parser
 		else
 		{
 			checkToken(Token.TEQUL, error);
-			if(debug == true){System.out.println("non error: returning null in asgnop");}
+			if(debug == true){System.out.println("non error: returning null in asgnop line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		return node;
@@ -1255,7 +1274,7 @@ public class Parser
 		else
 		{
 			checkToken(Token.TINPT, error);
-			if(debug == true){System.out.println("non error: returning null in iostat");}
+			if(debug == true){System.out.println("non error: returning null in iostat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		return node;
@@ -1271,7 +1290,7 @@ public class Parser
 		//Check for identifier token
 		if (!checkToken(Token.TIDEN, error)) 
 		{
-			if(debug == true){System.out.println("TIDEN error in callstat");}
+			if(debug == true){System.out.println("TIDEN error in callstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		stRec.setName(currentToken.getStr());
@@ -1281,7 +1300,7 @@ public class Parser
 		//Check for left paranthesis
 		if (!checkToken(Token.TLPAR, error)) 
 		{
-			if(debug == true){System.out.println("TLPAR error in callstat");}
+			if(debug == true){System.out.println("TLPAR error in callstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -1299,7 +1318,7 @@ public class Parser
 			//Check for right paranthesis
 			if (!checkToken(Token.TRPAR, error)) 
 			{
-				if(debug == true){System.out.println("TRPAR error in callstat");}
+				if(debug == true){System.out.println("TRPAR error in callstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 				return null;
 			}
 			currentToken = lookAhead;
@@ -1324,7 +1343,7 @@ public class Parser
 		//Check for return token
 		if (!checkToken(Token.TRETN, error))
 		{
-			if(debug == true){System.out.println("TRETN error in returnstat");}
+			if(debug == true){System.out.println("TRETN error in returnstat line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -1368,7 +1387,7 @@ public class Parser
 		String error = "Invalid variable declaration.";
 		if (!checkToken(Token.TIDEN, error)) 
 		{
-			if(debug == true){System.out.println("TIDEN error in var");}
+			if(debug == true){System.out.println("TIDEN error in var line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		StRec stRec = new StRec(currentToken.getStr());
@@ -1388,7 +1407,7 @@ public class Parser
 			//Check for right bracket token and consume
 			if (!checkToken(Token.TRBRK, error)) 
 			{
-				if(debug == true){System.out.println("TRBRK error in var");}
+				if(debug == true){System.out.println("TRBRK error in var line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 				return null;
 			}
 			currentToken = lookAhead;
@@ -1397,7 +1416,7 @@ public class Parser
 			//Check for dot token
 			if (!checkToken(Token.TDOT, error)) 
 			{
-				if(debug == true){System.out.println("TDOT error in var");}
+				if(debug == true){System.out.println("TDOT error in var line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 				return null;
 			}
 			lookAhead = scanner.nextToken();
@@ -1405,7 +1424,7 @@ public class Parser
 			//Check for identifier token and consume
 			if (!checkToken(Token.TIDEN, error)) 
 			{
-				if(debug == true){System.out.println("TIDEN error in var");}
+				if(debug == true){System.out.println("TIDEN error in var line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 				return null;
 			}
 			currentToken = lookAhead;
@@ -1531,7 +1550,7 @@ public class Parser
 		else
 		{
 			checkToken(Token.TAND, error);
-			if(debug == true){System.out.println("non error: returning null in logop");}
+			if(debug == true){System.out.println("non error: returning null in logop line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		return node;
@@ -1582,7 +1601,7 @@ public class Parser
 		else
 		{
 			checkToken(Token.TEQEQ, error);
-			if(debug == true){System.out.println("non error: returning null in relop");}
+			if(debug == true){System.out.println("non error: returning null in relop line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		return node;
@@ -1766,7 +1785,7 @@ public class Parser
 			//Check for left paranthesis token and consume
 			if (!checkToken(Token.TLPAR, error)) 
 			{
-				if(debug == true){System.out.println("TLPAR error in exponent");}
+				if(debug == true){System.out.println("TLPAR error in exponent line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 				return null;
 			}
 			currentToken = lookAhead;
@@ -1778,7 +1797,7 @@ public class Parser
 			//Check for right paranthesis token and consume
 			if (!checkToken(Token.TRPAR, error)) 
 			{
-				if(debug == true){System.out.println("TRPAR error in exponent");}
+				if(debug == true){System.out.println("TRPAR error in exponent line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 				return null;
 			}
 			currentToken = lookAhead;
@@ -1798,7 +1817,7 @@ public class Parser
 		//Check for identifier token
 		if (!checkToken(Token.TIDEN, error)) 
 		{
-			if(debug == true){System.out.println("TIDEN error in fncall");}
+			if(debug == true){System.out.println("TIDEN error in fncall line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		stRec.setName(currentToken.getStr());
@@ -1808,7 +1827,7 @@ public class Parser
 		//Check for left paranthesis token
 		if (!checkToken(Token.TLPAR, error)) 
 		{
-			if(debug == true){System.out.println("TLPAR error in fncall");}
+			if(debug == true){System.out.println("TLPAR error in fncall line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -1822,7 +1841,7 @@ public class Parser
 		//Check for right paranthesis token
 		if (!checkToken(Token.TRPAR, error))
 		{
-			if(debug == true){System.out.println("TRPAR error in fncall");}
+			if(debug == true){System.out.println("TRPAR error in fncall line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 			return null;
 		}
 		currentToken = lookAhead;
@@ -1837,6 +1856,7 @@ public class Parser
 		TreeNode node = new TreeNode(TreeNode.NPRLST);
 		TreeNode temp = printitem();
 
+		//System.out.println("meep1");
 		if (currentToken.value() != Token.TCOMA)
 		{
 			return temp;
@@ -1855,6 +1875,7 @@ public class Parser
 	//<printitem>   ::=  <expr> | <string>
 	private TreeNode printitem() throws IOException
 	{
+		//System.out.println("meep2");
 		if (currentToken.value() == Token.TSTRG)
 		{
 			TreeNode node = new TreeNode(TreeNode.NSTRG);

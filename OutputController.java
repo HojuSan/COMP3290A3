@@ -20,6 +20,7 @@ public class OutputController
 	private int line;                               //line
 	private int charPos;                            //character position
 	private int errorCount;                         //error counter
+	private String s = "";
 
 	//Constructor
 	public OutputController(BufferedReader source, PrintWriter listing, StringBuffer errors)
@@ -45,19 +46,23 @@ public class OutputController
 		if ((char)c == '\n')
 		{
 			listing.println(currentLine);
+			s+= currentLine+"\n";
             line++;
             
 			if (line < 10) 
 			{
 				currentLine = "  " + line + ": ";
+				s+= "  " + line + ": ";
 			}
 			else if (line < 100)
 			{
 				currentLine = " " + line + ": ";
+				s+= " " + line + ": ";
 			}
 			else
 			{
 				currentLine = line + ": ";
+				s+= line + ": ";
 			}
 			charPos = 0;					//when new line reset char position
 		}
@@ -66,12 +71,13 @@ public class OutputController
 			if (errorCount != 0)
 			{
 				listing.println(currentLine);
-				listing.println("Errors found: " + errorCount);
+				listing.println("!!!!Errors found: " + errorCount);
 				listing.println();
 				listing.println(errors);
 				listing.println();
 				listing.println("Preorder Traversal before error:");
 				listing.println();
+				s+= "\n"+currentLine +"\n"+"!!!!Errors found: " + errorCount+"\n"+errors+"\n"+"Preorder Traversal before error:"+"\n";
 			}
 			else
 			{
@@ -81,13 +87,16 @@ public class OutputController
 				listing.println();
 				listing.println("Preorder Traversal:");
 				listing.println();
+				s+= currentLine +"\n"+"Parser has finished" +"\n"+"Preorder Traversal:"+"\n";
 			}		
 		}
 		else
 		{
 			currentLine += "" + (char)c;
+			//s+="" + (char)c;
 			charPos++;
 		}
+		//s+=(char)c;
 		return c;
 	}
 
@@ -124,5 +133,11 @@ public class OutputController
 		errors.append(errorLine + "\n");
 		errorLine = "";						// reset error message
 	}
+
+	public String getString()
+	{
+		return s;
+	}
+
 
 }

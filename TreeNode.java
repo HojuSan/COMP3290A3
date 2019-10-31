@@ -13,6 +13,7 @@
 //
 
 import java.io.*;
+import java.util.*;
 
 public class TreeNode {
 
@@ -56,6 +57,7 @@ public class TreeNode {
 	private int nodeValue;
 	private TreeNode left,middle,right;
 	private StRec symbol, type;
+	private static String s = "";			//used to copy print writer into the.lst file
 
 	public TreeNode (int value) {
 		nodeValue = value;
@@ -64,6 +66,7 @@ public class TreeNode {
 		right = null;
 		symbol = null;
 		type = null;
+
 	}
 
 	public TreeNode (int value, StRec st) {
@@ -116,25 +119,57 @@ public class TreeNode {
   //	whatever you like tree output routine.
   //
 
-	public static void printTree(PrintWriter out, TreeNode tr) {
-		if (tr.nodeValue == NPROG) count = 0;
-		out.print(PRINTNODE[tr.nodeValue]+" ");
+  //modified so that it creates a string that can be copied into 
+  //a text file
+  public static void printTree(PrintWriter out, TreeNode tr) {
+	System.out.println(tr.nodeValue);
+	if (tr.nodeValue == NPROG) count = 0;
+	s += PRINTNODE[tr.nodeValue]+" ";
+	out.print(PRINTNODE[tr.nodeValue]+" ");
+	if (tr.symbol != null) {
+		s += tr.symbol.getName() + " ";
+		out.print(tr.symbol.getName() + " ");
+	}
+	count += s.length();
+	while (count%7 != 0)
+	{
+		out.print(" ");
+		s+= " ";
 		count++;
-		if (count%7 == 0) out.println();
-		if (tr.symbol != null) {
-			out.print(tr.symbol.getName() + " ");
-			count++;
-			if (count%7 == 0) out.println();
-		}
-		if (tr.type   != null) {
-			out.print(  tr.type.getName() + " ");
-			count++;
-			if (count%7 == 0) out.println();
-		}
-		if (tr.left   != null) { printTree(out,tr.left);   }
-		if (tr.middle != null) { printTree(out,tr.middle); }
-		if (tr.right  != null) { printTree(out,tr.right);  }
-		if (tr.nodeValue == NPROG && count%7 != 0) out.println();
+	}
+	if (count >= 70) 
+	{
+		out.println();
+		s+= "\n";
+		count = 0;
+	}
+	if (tr.left   != null) 
+	{ 
+		printTree(out,tr.left);   
+	}
+	if (tr.middle != null) 
+	{ 
+		printTree(out,tr.middle); 
+	}
+	if (tr.right  != null) 
+	{ 
+		printTree(out,tr.right);  
+	}
+	if (tr.nodeValue == NPROG && count != 70) 
+	{
+		out.println();
+		s+="\n";
+	}
+}
+
+//	static void writeStringToFile(File file) 
+//	{
+//		FileUtils.writeStringToFile(file, s);
+//	}
+
+	static public String getString()
+	{
+		return s;
 	}
 
 		// public static void printTree(PrintStream out, TreeNode tr) {
