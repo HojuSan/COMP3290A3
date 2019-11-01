@@ -86,10 +86,6 @@ public class Parser
 	{
 		TreeNode node = new TreeNode(TreeNode.NGLOB, consts(), types(), arrays());
 
-		node.setLeft(consts());
-		node.setMiddle(types());
-		node.setRight(arrays());
-
 		//if there is nothing just don't return it
 		if(node.getLeft() == null && node.getRight() == null && node.getMiddle() == null)
 		{

@@ -127,10 +127,11 @@ public class TreeNode {
 		return str+b;
 	}
 
+	//modified printTree so padding worked correctly
 	public static void printTree(PrintWriter out, TreeNode tr) {
 		 if (tr.nodeValue == NPROG) count = 0;
 		 s += formatString(PRINTNODE[tr.nodeValue])+" ";
-	 	out.print(PRINTNODE[tr.nodeValue]+" ");
+	 	out.print(formatString(PRINTNODE[tr.nodeValue])+" ");
 	 	count++;
 		 if (count%7 == 0)
 		 {
@@ -139,7 +140,7 @@ public class TreeNode {
 		 }
 	 	if (tr.symbol != null) {
 			s += formatString(tr.symbol.getName()) + " ";
-	 		out.print(tr.symbol.getName() + " ");
+	 		out.print(formatString(tr.symbol.getName()) + " ");
 	 		count++;
 			 if (count%7 == 0)
 			 {
@@ -149,7 +150,7 @@ public class TreeNode {
 	 	}
 		else if (tr.type   != null) 
 		 {
-			out.print(  tr.type.getName() + " ");
+			out.print(formatString(tr.type.getName()) + " ");
 			s+=formatString(tr.type.getName()) + " ";
 	 		count++;
 			 if (count%7 == 0)

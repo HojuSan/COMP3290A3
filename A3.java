@@ -19,27 +19,13 @@ public class A3
 	public static void main(String args[])  throws IOException
 	{
 		//input setup
-		//File file = new File(args[0]);	
-		File file = new File("testb.txt");		
+		File file = new File(args[0]);	
+		//File file = new File("testd2.txt");		
 		//File outputFile = new File("outputListing.lst");							//adds file
 		PrintWriter pw = new PrintWriter(System.out);					//Prints formatted representations of objects to a text-output stream
 		StringBuffer sb = new StringBuffer("");							//a string that can be modified
 		BufferedReader br = new BufferedReader(new FileReader(file));	//read char by char
 		OutputController output = new OutputController(br, pw, sb);
-
-		//PrintWriter ol = new PrintWriter("outputListing.lst");
-
-
-//		//A1-A2 output
-//		Scanner scan = new Scanner(output);
-//
-//		Token temp;
-//		
-//		//currently not sure how things will print
-//		while(true != scan.isEOF())
-//		{
-//			scan.nextToken();
-//		}
 		
 		//A3 Output
 		Parser parser  = new Parser(output);
