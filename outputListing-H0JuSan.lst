@@ -1,0 +1,24 @@
+  0: /--at least on that fails semantically(but suceeds lexically and syntactically)
+  1:   1: /--syntactically using a variable that doesn't exist
+  2:   2: /--semantically the code needs to run
+  3:   3: 
+  4:   4: /-- should break at printline since x was never instantiated
+  5:   5: 
+  6:   6: CD19 HelloWorld
+  7:   7: main
+  8:   8:         s : 
+  9:   9:     
+ 10:  10: begin
+ 11:  11: 
+ 12:  12:     printline x;   /--x has never been defined
+ 13:  13:     
+ 14:  14: end CD19 HelloWorld 
+ 15:  15: 
+ 16: 
+ 16: 
+!!!!Errors found: 1
+ At Line 12: Syntax Error: Invalid variable declaration.
+
+Preorder Traversal before error:
+NPROG  HelloWorld NMAIN NPRLN  NSIMV  x 
+

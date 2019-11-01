@@ -567,8 +567,10 @@ public class Scanner
         return foundToken;
 	}
 	
+	//new and improved debugPrint
 	public void debugPrint(Token foundToken, boolean prevError)
 	{
+		Token sToken;
 		//System.out.println(temp.toString() +" ");
 		//printout format
 		//lexical errors
@@ -586,36 +588,42 @@ public class Scanner
 			//System.out.print("case2!!!!!");
 			System.out.println("TUNDF");
 			System.out.println("lexical error "+foundToken.getStr());
+
 			outputLimit = "";
 			prevError = false;
 			prevPrint = true;			//just to remove the space
-			return;
+			//return;
 		}
+		else
+		{
+			// TSTRG token the String
+			if(foundToken.value()==61)
+			{
+				String tokenStr=foundToken.getStr();
+				sToken= new Token(61,foundToken.getLn(),foundToken.getPos(),tokenStr);
+				prevPrint = false;
 
-		//regular token printout
-		if(60 >= outputLimit.length())//(66 > outputLimit.length() || 60 >= outputLimit.length()) //6 token buffer
-		{
-			//System.out.print("case3!!!!!");
-			System.out.print(foundToken.shortString());
-			//System.out.print(foundToken.shortString() + " ["+outputLimit.length()+"]");//+"outputlimit "+outputLimit);//+outputLimit.length());
-			prevError = false;
-			prevPrint = false;
-			return;
-		}
-		else	//create a newline
-		{
-			//System.out.print("case4!!!!!");
-			//System.out.print(" outputlimit is "+outputLimit.length());
-			System.out.print(foundToken.shortString());
-			System.out.println();
-			//System.out.println("\n\n");
-			//System.out.println("-----1-----2-----3-----4-----5-----6-----7-----8-----9-----10");
-			//System.out.println(outputLimit);
-			//reset the strings
-			outputLimit = "";	
-			prevError = false;
-			prevPrint = true;
-			return;
+			}
+			else
+			{
+				
+				sToken = foundToken;
+				prevPrint = false;
+			}
+
+			//System.out.println("\n=======================================outputlimit length: "+outputLimit.length());
+
+			//System.out.println("================"+outputLimit);
+			if (outputLimit.length()>60)
+			{
+				System.out.println("");
+				//System.out.println("-----1-----2-----3-----4-----5-----6-----7-----8-----9-----10");
+				outputLimit = "";			
+				prevPrint = false;
+			}
+			
+			System.out.print(sToken.shortString());
+			outputLimit+=sToken.shortString();
 		}
 	}
 

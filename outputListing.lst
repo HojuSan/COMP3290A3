@@ -1,25 +1,79 @@
-  1: /--at least on that fails semantically(but suceeds lexically and syntactically)
-  2:   2: /--syntactically using a variable that doesn't exist
-  3:   3: /--semantically the code needs to run
-  4:   4: 
-  5:   5: /-- should break at printline since x was never instantiated
-  6:   6: 
-  7:   7: CD19 HelloWorld
-  8:   8: main
-  9:   9:         s : 
- 10:  10:     
- 11:  11: begin
- 12:  12: 
- 13:  13:     printline x;   /--x has never been defined
- 14:  14:     
- 15:  15: end CD19 HelloWorld 
- 16:  16: 
- 17: 
- 17: 
-!!!!Errors found: 1
-Syntax Error: at line:23  column:0  Invalid variable declaration: Incorrect expressions used
-
+  1: /-- Cartseian plane shape area calculator - should PASS
+  2:   2: /-- 
+  3:   3: 
+  4:   4: cd19 e
+  5:   5: 
+  6:   6:     constants
+  7:   7:       /-- max is 21 and not 21 as the first point is added onto the end of the array for the calculation
+  8:   8:       max = 21
+  9:   9:     
+ 10:  10:     types
+ 11:  11:       point is
+ 12:  12:             x : real,
+ 13:  13:             y : real
+ 14:  14:       end
+ 15:  15: 
+ 16:  16:       Shape is array[len] of box
+ 17:  17: 
+ 18:  18:    arrays
+ 19:  19:     myShape : Shape
+ 20:  20: 
+ 21:  21:    /--- Function to read in how many points the shape has from the user 
+ 22:  22:    function getNumPoints () : integer
+ 23:  23:         numPoints : integer
+ 24:  24:         begin
+ 25:  25:           printline "How many Points does your shape have ?";
+ 26:  26:           input numPoints;
+ 27:  27:           return numPoints;
+ 28:  28:         end
+ 29:  29: 
+ 30:  30: 
+ 31:  31:    /-- Passing shape object where this function edits it
+ 32:  32:    function newPoint (index : integer, myShape : Shape) : void
+ 33:  33:         x : real,
+ 34:  34:         y : real
+ 35:  35:         begin
+ 36:  36:           printline "Point ", index;
+ 37:  37:           printline "x value :";
+ 38:  38:           input x;
+ 39:  39:           printline "y value :";
+ 40:  40:           input y;
+ 41:  41:           myShape[i].x = x;
+ 42:  42:           myShape[i].y = y;
+ 43:  43:           return;
+ 44:  44:         end
+ 45:  45:    main
+ 46:  46:     numPoints : integer,
+ 47:  47:     area : real,
+ 48:  48:     i : integer,
+ 49:  49:     j : integer
+ 50:  50: 
+ 51:  51:    begin
+ 52:  52:     /-- Get how many points there are in the shape
+ 53:  53:     /-- Creating however many points 
+ 54:  54:     for(i=0; i<=numPoints)
+ 55:  55:       newPoint(i, myShape);
+ 56:  56:       i += 1;
+ 57:  57:     end
+ 58:  58: 
+ 59:  59:     /-- adding the first point to the last point
+ 60:  60:     myShape[numPoints].x=myShape[0].x;
+ 61:  61:     myShape[numPoints].y=myShape[0].y;
+ 62:  62:     /-- Calculating the area
+ 63:  63:     area = 0;
+ 64:  64:     
+ 65:  65:     for(j=0; j<=numPoints + 1)
+ 66:  66:       area += 10;
+ 67:  67:       j +=1;
+ 68:  68:     end
+ 69:  69:     
+ 70:  70:     area = area/2;
+ 71:  71:     printline " The Area is found to be ", area;
+ 72:  72:    
+ 73:  73:    end 
+ 74:  74: 
+ 75:  75: cd19 e
+ 76:  76: 
+Parser has finished
 Preorder Traversal:
-NPROG  HelloWorld HelloWorld NMAIN NUNDEF NPRLN  NSIMV  
-x 
 

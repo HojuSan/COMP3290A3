@@ -127,45 +127,80 @@ public class TreeNode {
 		return str+b;
 	}
 
-	//modified printTree so padding worked correctly
+	//add the s+ somewhere
 	public static void printTree(PrintWriter out, TreeNode tr) {
-		 if (tr.nodeValue == NPROG) count = 0;
-		 s += formatString(PRINTNODE[tr.nodeValue])+" ";
-	 	out.print(formatString(PRINTNODE[tr.nodeValue])+" ");
-	 	count++;
-		 if (count%7 == 0)
-		 {
-			out.println();
-			s+="\n";
-		 }
-	 	if (tr.symbol != null) {
-			s += formatString(tr.symbol.getName()) + " ";
-	 		out.print(formatString(tr.symbol.getName()) + " ");
-	 		count++;
-			 if (count%7 == 0)
-			 {
-				out.println();
-				s+="\n";
-			 }
-	 	}
-		else if (tr.type   != null) 
-		 {
-			out.print(formatString(tr.type.getName()) + " ");
-			s+=formatString(tr.type.getName()) + " ";
-	 		count++;
-			 if (count%7 == 0)
-			 {
-				out.println();
-				s+="\n";
-			 } 
-	 	}
-	 	if (tr.left   != null) { printTree(out,tr.left);   }
-	 	if (tr.middle != null) { printTree(out,tr.middle); }
-	 	if (tr.right  != null) { printTree(out,tr.right);  }
-		if (tr.nodeValue == NPROG && count%7 != 0) 
-		{
-			out.println();
-			s+="\n";
+		if (tr.nodeValue == NPROG) count = 0;
+		String fString=formatString(PRINTNODE[tr.nodeValue])+" ";
+		out.print(fString);
+		count+=(fString.length()/7);
+		// new line
+		if (count%10 == 0||count>10){out.println();  count=0;}
+		
+		if (tr.symbol != null) {
+			fString=formatString(tr.symbol.getName()) + " ";
+			out.print(fString);
+			count+=(fString.length()/7);
+			// new line
+			if (count%10 == 0||count>10) {out.println();  count=0;}
+
+		}		
+		else if (tr.type   != null) {
+			fString=formatString(tr.type.getName()) + " ";
+			out.print(fString);
+			count+=(fString.length()/7);
+			// new line
+			if (count%10 == 0||count>10){ out.println();  count=0;}
 		}
-	 }
+		if (tr.left   != null) { printTree(out,tr.left);   }
+		if (tr.middle != null) { printTree(out,tr.middle); }
+		if (tr.right  != null) { printTree(out,tr.right);  }
+		if (tr.nodeValue == NPROG && count%10 != 0) {out.println();  count=0;};
+	}
+
+	//modified printTree so padding worked correctly
+//	public static void printTree(PrintWriter out, TreeNode tr) {
+//		 if (tr.nodeValue == NPROG) count = 0;
+//		 s += formatString(PRINTNODE[tr.nodeValue])+" ";
+//	 	out.print(formatString(PRINTNODE[tr.nodeValue])+" ");
+//		 count+=(s.length()/7);
+//		 //creating new line
+//		 if (count%10 == 0||count>10)
+//		 {
+//			out.println();
+//			s+="\n";
+//			count = 0;
+//		 }
+//	 	if (tr.symbol != null) {
+//			s += formatString(tr.symbol.getName()) + " ";
+//	 		out.print(formatString(tr.symbol.getName()) + " ");
+//	 		count+=(s.length()/7);
+//			 if (count%10 == 0||count>10)
+//			 {
+//				out.println();
+//				s+="\n";
+//				count = 0;
+//			 }
+//	 	}
+//		else if (tr.type   != null) 
+//		 {
+//			out.print(formatString(tr.type.getName()) + " ");
+//			s+=formatString(tr.type.getName()) + " ";
+//	 		count+=(s.length()/7);
+//			 if (count%10 == 0||count>10)
+//			 {
+//				out.println();
+//				s+="\n";
+//				count = 0;
+//			 } 
+//	 	}
+//	 	if (tr.left   != null) { printTree(out,tr.left);   }
+//	 	if (tr.middle != null) { printTree(out,tr.middle); }
+//	 	if (tr.right  != null) { printTree(out,tr.right);  }
+//		if (tr.nodeValue == NPROG && count%10 != 0) 
+//		{
+//			out.println();
+//			s+="\n";
+//			count = 0;
+//		}
+//	 }
 }

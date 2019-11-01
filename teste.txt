@@ -74,3 +74,34 @@ main
     end
 
 CD19 testE
+
+NPROG  testd2 NGLOB  NINIT  COUNT  NILIT  10
+NILIST NRTYPE mark   NFLIST NSDECL id     NFLIST
+NSDECL midterm       NSDECL final  NATYPE marks  NSIMV       
+COUNT  NARRD  comp3290      NMAIN  NSDECL i      NSTATS      
+NFOR   NASGN  NSIMV  i      NILIT  0      NLSS
+NSIMV  i      NSIMV  COUNT  NSTATS NASGN  NARRV
+comp3290      NSIMV  i      NSIMV  i      NSTATS NASGN       
+NARRV  comp3290      NSIMV  i      NADD   NILIT  50
+NSIMV  i      NSTATS NASGN  NARRV  comp3290      NSIMV       
+i      NADD   NILIT  80     NSIMV  i      NASGN
+NSIMV  i      NADD   NSIMV  i      NILIT  1
+NFOR   NASGN  NSIMV  i      NILIT  0      NLSS
+NSIMV  i      NSIMV  COUNT  NSTATS NPRLN  NARRV
+comp3290      NSIMV  i      NSTATS NPRLN  NARRV  comp3290    
+NSIMV  i      NSTATS NPRLN  NARRV  comp3290      NSIMV       
+i      NASGN  NSIMV  i      NADD   NSIMV  i
+NILIT  1
+
+NPROG  testd2 NGLOB  NINIT  COUNT  NILIT  10     NILIST NRTYPE mark
+NFLIST NSDECL id     NFLIST NSDECL midterm       NSDECL final  NATYPE
+marks  NSIMV  COUNT  NARRD  comp3290      NMAIN  NSDECL i      NSTATS
+NFOR   NASGN  NSIMV  i      NILIT  0      NLSS   NSIMV  i      NSIMVCOUNT  NSTATS NASGN  NARRV  comp3290      NSIMV  i      NSIMV  i
+NSTATS NASGN  NARRV  comp3290      NSIMV  i      NADD   NILIT  50
+NSIMV  i      NSTATS NASGN  NARRV  comp3290      NSIMV  i      NADD
+NILIT  80     NSIMV  i      NASGN  NSIMV  i      NADD   NSIMV  i
+NILIT  1      NFOR   NASGN  NSIMV  i      NILIT  0      NLSS   NSIMV
+i      NSIMV  COUNT  NSTATS NPRLN  NARRV  comp3290      NSIMV  i
+NSTATS NPRLN  NARRV  comp3290      NSIMV  i      NSTATS NPRLN  NARRV
+comp3290      NSIMV  i      NASGN  NSIMV  i      NADD   NSIMV  i
+NILIT  1
