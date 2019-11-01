@@ -384,7 +384,7 @@ public class Parser
 				if(debug == true){System.out.println("TEND error in type line: "+outPut.getLine()+" charPos "+outPut.getCharPos());}
 				return node;
 			}
-			currentToken = scanner.nextToken();
+			//currentToken = scanner.nextToken();
 			
 			node.setValue(TreeNode.NRTYPE);
 			node.setType(stRec); // set node type
@@ -784,14 +784,16 @@ public class Parser
 	{
 		TreeNode decimal = decl();
 
+		//,
 		if (currentToken.value() == Token.TCOMA)
 		{
 			currentToken = scanner.nextToken();
 
 			return new TreeNode(TreeNode.NDLIST, decimal, dlist());
 		}
-
+		else{
 		return decimal;
+		}
 	}
 
 	//<decl>        ::=  <sdecl> | <arrdecl>

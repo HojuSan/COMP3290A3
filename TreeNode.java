@@ -109,75 +109,27 @@ public class TreeNode {
 
 	public void setType(StRec st) { type = st; }
 
-
-  //
-  // Call is: TreeNode.printTree(outfile, rootOfTree);
-  //	-> prints tree pre-order as a flat 7 values per line
-  //
-  //   I am used to this type of print - if you cannot use
-  //	it then you are free to implement your own XML or
-  //	whatever you like tree output routine.
-  //
-
-  //modified so that it creates a string that can be copied into 
-  //a text file
-//  public static void printTree(PrintWriter out, TreeNode tr) 
-//  {
-//		//System.out.println("meep");
-//		if (tr.nodeValue == NPROG) count = 0;
-//		s += PRINTNODE[tr.nodeValue]+" ";
-//		count++;
-//		
-//		out.print(PRINTNODE[tr.nodeValue]+" ");
-//		if (tr.symbol != null) {
-//			s += tr.symbol.getName() + " ";
-//			out.print(tr.symbol.getName() + " ");
-//		}
-//		count += s.length();
-//		while (count%7 != 0)
-//		{
-//			out.print(" ");
-//			s+= " ";
-//			count++;
-//		}
-//		if (count >= 70) 
-//		{
-//			out.println();
-//			s+= "\n";
-//			count = 0;
-//		}
-//		if (tr.left   != null) 
-//		{ 
-//			printTree(out,tr.left);   
-//		}
-//		if (tr.middle != null) 
-//		{ 
-//			printTree(out,tr.middle); 
-//		}
-//		if (tr.right  != null) 
-//		{ 
-//			printTree(out,tr.right);  
-//		}
-//		if (tr.nodeValue == NPROG && count != 70) 
-//		{
-//			out.println();
-//			s+="\n";
-//		}
-//	}
-
-//	static void writeStringToFile(File file) 
-//	{
-//		FileUtils.writeStringToFile(file, s);
-//	}
-
 	static public String getString()
 	{
 		return s;
 	}
+	private static String formatString(String str)
+	{
+		String b = "";
+
+		int c = 6-(str.length()%7);
+
+		for (int i=0;i<c;i++)
+		{
+			b+=" ";
+		}
+
+		return str+b;
+	}
 
 	public static void printTree(PrintWriter out, TreeNode tr) {
 		 if (tr.nodeValue == NPROG) count = 0;
-		 s += PRINTNODE[tr.nodeValue]+" ";
+		 s += formatString(PRINTNODE[tr.nodeValue])+" ";
 	 	out.print(PRINTNODE[tr.nodeValue]+" ");
 	 	count++;
 		 if (count%7 == 0)
@@ -186,7 +138,7 @@ public class TreeNode {
 			s+="\n";
 		 }
 	 	if (tr.symbol != null) {
-			s += tr.symbol.getName() + " ";
+			s += formatString(tr.symbol.getName()) + " ";
 	 		out.print(tr.symbol.getName() + " ");
 	 		count++;
 			 if (count%7 == 0)
@@ -195,10 +147,10 @@ public class TreeNode {
 				s+="\n";
 			 }
 	 	}
-		 if (tr.type   != null) 
+		else if (tr.type   != null) 
 		 {
 			out.print(  tr.type.getName() + " ");
-			s+=tr.type.getName() + " ";
+			s+=formatString(tr.type.getName()) + " ";
 	 		count++;
 			 if (count%7 == 0)
 			 {
