@@ -80,11 +80,13 @@ public class OutputController
 			}
 			charPos = 0;					//when new line reset char position
 		}
+		//when the parser is finished print this out
 		else if ((byte) c == -1)
 		{
 			if (errorCount != 0)
 			{
 				listing.println(currentLine);
+				listing.println();
 				listing.println("!!!!Errors found: " + errorCount);
 				listing.println();
 				listing.println(errors);
@@ -106,11 +108,12 @@ public class OutputController
 		}
 		else
 		{
-			currentLine += "" + (char)c;
+			//currentLine += "" + (char)c;
 			//s+="" + (char)c;
 			charPos++;
 		}
 		//s+=(char)c;
+		System.out.println("column is at "+ charPos);
 		return c;
 	}
 

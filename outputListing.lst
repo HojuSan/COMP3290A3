@@ -1,33 +1,23 @@
-  1: /--e) Write a program in CD19 that will compute the area of a polygon from a set of (x, y) Cartesian points. (1)
-  2:   2: /--The program should have functions to (i) input the number of points (up to 20) and the
-  3:   3: /--points themselves, and (ii) compute the area of the polygon.
-  4:   4: /--The main program should be used to output the result.
-  5:   5: /--<program> ::= CD19 <id> <consts> <types> <arrays> <funcs> <mainbody>
-  6:   6: /--<mainbody> ::= main <slist> begin <stats> end CD19 <id>
-  7:   7: 
-  8:   8: /--takes a users input and calculates the polgons area
-  9:   9: CD19 testE
- 10:  10: 
- 11:  11: constants
- 12:  12:     COUNT = 20
- 13:  13: 
- 14:  14: types
- 15:  15:     point is 
- 16:  16:         x : real,
- 17:  17:         y : real
- 18:  18:     end
- 19:  19: 
- 20:  20: points is array [COUNT] of point
- 21:  21: 
- 22:  22: arrays
- 23:  23:     polygon : points
- 24:  24: 
- 25:  25: /--recieves an array of points to do the calculations
- 26:  26: function calArea(points : array): real
- 27:  27: 
- 28:  28:         area : real,
- 29:  29:         points : array
- 30:  30: 
- 31:  31:     begin
- 32:  32: 
- 33: 
+  1: /--at least on that fails semantically(but suceeds lexically and syntactically)
+  2:   2: /--syntactically using a variable that doesn't exist
+  3:   3: /--semantically the code needs to run
+  4:   4: 
+  5:   5: /-- should break at printline since x was never instantiated
+  6:   6: 
+  7:   7: CD19 HelloWorld
+  8:   8: main
+  9:   9:         s : 
+ 10:  10:     
+ 11:  11: begin
+ 12:  12: 
+ 13:  13:     printline x;   /--x has never been defined
+ 14:  14:     
+ 15:  15: end CD19 HelloWorld 
+ 16:  16: 
+ 17: 
+ 17: 
+!!!!Errors found: 1
+Syntax Error: at line:11  column:6  Invalid variable declaration: Incorrect expressions used
+
+Preorder Traversal:
+

@@ -1909,8 +1909,8 @@ public class Parser
 			// location of the error in source code
 			String errorType="";
 
-			int line=currentToken.getLn();// line of code
-			int column=currentToken.getPos();// column of code
+			int line=outPut.getLine();// line of code
+			int column=outPut.getCharPos();// column of code
 			//System.out.println("bingo2");
 			if (currentToken.value() == Token.TUNDF)
 			{
