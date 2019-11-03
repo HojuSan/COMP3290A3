@@ -21,6 +21,7 @@ public class OutputController
 	private int charPos;                            //character position
 	private int errorCount;                         //error counter
 	private String s = "";
+	private Boolean dTestCatch = false;
 
 	//Constructor
 	public OutputController(BufferedReader source, PrintWriter listing, StringBuffer errors)
@@ -81,39 +82,40 @@ public class OutputController
 			charPos = 0;					//when new line reset char position
 		}
 		//when the parser is finished print this out
-		else if ((byte) c == -1)
+		else if ((byte) c == -1&& dTestCatch == false)
 		{
 			if (errorCount != 0)
 			{
+				dTestCatch = true;
 				listing.println(currentLine);
 				listing.println();
 				listing.println("!!!!Errors found: " + errorCount);
 				listing.println();
 				listing.println(errors);
-				listing.println();
+				//listing.println();
 				listing.println("Preorder Traversal:");
 				listing.println();
-				s+= "\n"+currentLine +"\n"+"!!!!Errors found: " + errorCount+"\n"+errors+"\n"+"Preorder Traversal:"+"\n";
+				s+= "\n"+currentLine +"\n"+"\n"+"!!!!Errors found: " + errorCount+"\n"+"\n"+errors+"\n"+"Preorder Traversal:"+"\n"+"\n";
 			}
 			else
 			{
+				dTestCatch = true;
 				listing.println(currentLine);
 				listing.println();
 				listing.println("Parser has finished");
 				listing.println();
 				listing.println("Preorder Traversal:");
 				listing.println();
-				s+= currentLine +"\n"+"Parser has finished" +"\n"+"Preorder Traversal:"+"\n";
+				s+= currentLine +"\n"+"\n"+"Parser has finished" +"\n"+"Preorder Traversal:"+"\n"+"\n";
 			}		
 		}
 		else
 		{
-			//currentLine += "" + (char)c;
-			//s+="" + (char)c;
+			currentLine += "" + (char)c;
 			charPos++;
 		}
 		//s+=(char)c;
-		System.out.println("column is at "+ charPos);
+		//System.out.println("column is at "+ charPos);
 		return c;
 	}
 

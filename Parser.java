@@ -18,7 +18,8 @@ public class Parser
 	private Token lookAhead;				//Lookahead toekn for LL(1)
 	private OutputController outPut;		//Output controller reference
 	private SymbolTable symbolTable;
-	private boolean debug = false
+	private boolean debug = false;
+	private String errorString = "";
 	;
 
     //Constructor
@@ -1916,17 +1917,24 @@ public class Parser
 			{
 				//System.out.println("bingo3");
 				outPut.setError("Lexical Error: at line:" +line+"  column:" + column + "  "+currentToken.getStr());
+				errorString += "Lexical Error: at line:" +line+"  column:" + column + "  "+currentToken.getStr();
 			}
 			else
 			{
 				//System.out.println("bingo4");
 				outPut.setError("Syntax Error: at line:" +line+"  column:" + column + "  "+message);
+				errorString += "Syntax Error: at line:" +line+"  column:" + column + "  "+message;
 			}
 			//System.out.println("bingo5");
 			return false;
 		}
 		//System.out.println("bingo6");
 		return true;
+	}
+
+	private String getErrorString()
+	{
+		return errorString;
 	}
 
 }

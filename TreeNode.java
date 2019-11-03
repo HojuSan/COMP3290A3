@@ -129,9 +129,15 @@ public class TreeNode {
 
 	//add the s+ somewheressssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
 	public static void printTree(PrintWriter out, TreeNode tr) {
-		if (tr.nodeValue == NPROG) count = 0;
+		if (tr.nodeValue == NPROG)
+		{
+			count = 0;
+			//out.print("\nPreorder Traversal:\n"+"\n");
+			//s+="\n"+"\n"+"Preorder Traversal:\n"+"\n";
+		} 
 		String fString=formatString(PRINTNODE[tr.nodeValue])+" ";
 		out.print(fString);
+		s+=fString;
 		count+=(fString.length()/7);
 		// new line
 		if (count%10 == 0||count>10){out.println();  count=0;}
@@ -139,6 +145,7 @@ public class TreeNode {
 		if (tr.symbol != null) {
 			fString=formatString(tr.symbol.getName()) + " ";
 			out.print(fString);
+			s+=fString;
 			count+=(fString.length()/7);
 			// new line
 			if (count%10 == 0||count>10) {out.println();  count=0;}
@@ -147,6 +154,7 @@ public class TreeNode {
 		else if (tr.type   != null) {
 			fString=formatString(tr.type.getName()) + " ";
 			out.print(fString);
+			s+=fString;
 			count+=(fString.length()/7);
 			// new line
 			if (count%10 == 0||count>10){ out.println();  count=0;}

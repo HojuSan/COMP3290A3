@@ -30,12 +30,12 @@ public class A3
 		//A3 Output
 		Parser parser  = new Parser(output);
 		
-		TreeNode.printTree(pw, parser.program());
+		TreeNode.printTree(pw, parser.program());	
 		
 		//System.out.println("s string: + "+output.getString()+TreeNode.getString());
 		
 		try (PrintWriter ol = new PrintWriter("outputListing.lst")) {
-			ol.println(output.getString());//+TreeNode.getString());
+			ol.println(output.getString()+TreeNode.getString());
 		}
 		//TreeNode.writeStringToFile(outputFile);
 		System.out.println();
