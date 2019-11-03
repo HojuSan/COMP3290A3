@@ -106,7 +106,7 @@ public class OutputController
 				listing.println();
 				listing.println("Preorder Traversal:");
 				listing.println();
-				s+= currentLine +"\n"+"\n"+"Parser has finished" +"\n"+"Preorder Traversal:"+"\n"+"\n";
+				s+= currentLine +"\n"+"\n"+"Parser has finished" +"\n"+"\n"+"Preorder Traversal:"+"\n"+"\n";
 			}		
 		}
 		else

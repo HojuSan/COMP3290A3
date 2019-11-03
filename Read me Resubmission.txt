@@ -1,0 +1,14 @@
+Hello Dan
+
+Files included in this assignment are 
+A3, Parser, Scanner, SymbolTable, StRec, Token, TreeNode, OutputController
+
+Before the code randomly crashed under 80% of instances. That is now fixed so now the code
+will only break under certain circumstance like if there is no CD19 token etc. 
+In these instances I do have the error messages stored but how my code printing works,
+it needs the error recovery to come into play but for a circumstance like that it won't 
+hense the printing won't work under those circumstances. It would require to much time 
+to fix so i decided to ignore this bug
+
+Outside of this all a to e txt runs fine. even my lexical tests etc run it fine.
+It prints both the code, error msgs, preorder traversal in both the terminal and lst file.

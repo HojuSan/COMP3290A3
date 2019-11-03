@@ -106,6 +106,51 @@
 106: 106: /-- late remark...just to test that
 
 Parser has finished
+
 Preorder Traversal:
 
-NPROG  d      NGLOB  NILIST NINIT  MAXINPUTSIZE  NILIT  20     NINIT  test   NFLIT  40.6   NILIST NRTYPE point  NFLIST NSDECL xPos   NSDECL yPos   NILIST NATYPE points NSIMV  MAXINPUTSIZE  NRTYPE pointer       NFLIST NSDECL lop    NFLIST NSDECL yes    NSDECL yop    NALIST NARRD  inputPoints   NARRD  outputPoints  NFUNCS        NFUND  getInput      NPLIST NARRP  NARRD  inputArray    NSIMP  NSDECL test   NDLIST NSDECL arraySize     NSDECL i      NSTATS NPRLN  NSTRG  "Enter number of points."   NSTATS NINPUT NSIMV  arraySize     NSTATS NREPT  NSTATS NPRLN  NSTRG  "number of points must be less than 20 and greater than 2."    NINPUT NSIMV  arraySize     NBOOL  NAND   NGRT   NSIMV  arraySize     NSIMV  MAXINPUTSIZE  NLSS   NSIMV  arraySize     NILIT  2      NSTATS NFOR   NASGN  NSIMV  i      NSIMV  arraySize     NGRT   NSIMV  i      NILIT  0      NSTATS NPRLN  NSTRG  "input X"     NSTATS NINPUT NARRV  points NSIMV  i      NSTATS NPRLN  NSTRG  "input Y"     NINPUT NARRV  points NSIMV  i      NRETN  NSIMV  arraySize     NFUNCS        NFUND  getlinput     NPLIST NARRP  NARRD  inputArray    NPLIST NSIMP  NSDECL test   NARRP  NARRD  test   NDLIST NSDECL arraySize     NDLIST NSDECL i      NSDECL HeIS   NSTATS NPRLN  NSTRG  "Enter number of points."   NSTATS NPRINT NSTRG  "I feel Your prescense amongst us" NSTATS NINPUT NSIMV  arraySize     NSTATS NREPT  NSTATS NPRLN  NSTRG  "number of points must be less than 20 and greater than 2."    NINPUT NSIMV  arraySize     NBOOL  NAND   NGRT   NSIMV  arraySize     NSIMV  MAXINPUTSIZE  NLSS   NSIMV  arraySize     NILIT  2      NSTATS NFOR   NASGN  NSIMV  i      NSIMV  arraySize     NGRT   NSIMV  i      NILIT  0      NSTATS NPRLN  NSTRG  "input X"     NSTATS NINPUT NARRV  points NSIMV  i      NSTATS NPRLN  NSTRG  "input Y"     NINPUT NARRV  points NSIMV  i      NSTATS NINPUT NSIMV  canYourHearTheRumble NRETN  NSIMV  arraySize     NFUNCS        NFUND  calculateArea NPLIST NARRP  NARRD  inputArray    NSIMP  NSDECL arraySize     NDLIST NSDECL area   NARRD  count  NSTATS NFOR   NASGN  NSIMV  i      NILIT  0      NLSS   NSIMV  i      NSUB   NSIMV  arraySize     NILIT  2      NPLEQ  NSIMV  area   NMUL   NADD   NARRV  inputArray    NSIMV  i      NARRV  inputArray    NADD   NSIMV  i      NILIT  1      NSUB   NARRV  inputArray    NSIMV  i1     NARRV  inputArray    NSIMV  i      NSTATS NSTEQ  NSIMV  area   NFLIT  0.5    NRETN  NSIMV  area   NFUNCS        NFUND  Circe  NPLIST NARRP  NARRD  inputArray    NSIMP  NSDECL arraySize     NDLIST NSDECL area   NARRD  count  NSTATS NREPT  NASGN  NSIMV  area   NILIT  7      NSTATS NPRLN  NSTRG  "number of points must be less than 20 and greater than 2."    NSTATS NINPUT NSIMV  arraySize     NPLEQ  NSIMV  area   NILIT  1      NBOOL  NAND   NGRT   NSIMV  arraySize     NSIMV  MAXINPUTSIZE  NGRT   NSIMV  arraySize     NILIT  2      NSTATS NSTEQ  NSIMV  area   NFLIT  0.5    NRETN  NSIMV  area   NMAIN  NSDLST NSDECL arraySize     NSDECL test   NSTATS NIFTH  NTRUE  NASGN  NSIMV  arraySize     NILIT  7      NIFTE  NFALS  NASGN  NSIMV  arraySize     NILIT  9      NASGN  NSIMV  arraySize     NILIT  8      
+NPROG  d      NGLOB  NILIST NINIT  MAXINPUTSIZE  NILIT  20     NINIT  
+test   NFLIT  40.6   NILIST NRTYPE point  NFLIST NSDECL xPos   NSDECL 
+yPos   NILIST NATYPE points NSIMV  MAXINPUTSIZE  NRTYPE pointer       
+NFLIST NSDECL lop    NFLIST NSDECL yes    NSDECL yop    NALIST NARRD  
+inputPoints   NARRD  outputPoints  NFUNCS        NFUND  getInput      
+NPLIST NARRP  NARRD  inputArray    NSIMP  NSDECL test   NDLIST NSDECL 
+arraySize     NSDECL i      NSTATS NPRLN  NSTRG  "Enter number of points."   
+NSTATS NINPUT NSIMV  arraySize     NSTATS NREPT  NSTATS NPRLN  NSTRG  
+"number of points must be less than 20 and greater than 2."    NINPUT 
+NSIMV  arraySize     NBOOL  NAND   NGRT   NSIMV  arraySize     NSIMV  
+MAXINPUTSIZE  NLSS   NSIMV  arraySize     NILIT  2      NSTATS NFOR   
+NASGN  NSIMV  i      NSIMV  arraySize     NGRT   NSIMV  i      NILIT  
+0      NSTATS NPRLN  NSTRG  "input X"     NSTATS NINPUT NARRV  points 
+NSIMV  i      NSTATS NPRLN  NSTRG  "input Y"     NINPUT NARRV  points 
+NSIMV  i      NRETN  NSIMV  arraySize     NFUNCS        NFUND  getlinput     
+NPLIST NARRP  NARRD  inputArray    NPLIST NSIMP  NSDECL test   NARRP  
+NARRD  test   NDLIST NSDECL arraySize     NDLIST NSDECL i      NSDECL 
+HeIS   NSTATS NPRLN  NSTRG  "Enter number of points."   NSTATS NPRINT 
+NSTRG  "I feel Your prescense amongst us" NSTATS NINPUT NSIMV  arraySize     
+NSTATS NREPT  NSTATS NPRLN  NSTRG  "number of points must be less than 20 and greater than 2."    
+NINPUT NSIMV  arraySize     NBOOL  NAND   NGRT   NSIMV  arraySize     
+NSIMV  MAXINPUTSIZE  NLSS   NSIMV  arraySize     NILIT  2      NSTATS 
+NFOR   NASGN  NSIMV  i      NSIMV  arraySize     NGRT   NSIMV  i      
+NILIT  0      NSTATS NPRLN  NSTRG  "input X"     NSTATS NINPUT NARRV  
+points NSIMV  i      NSTATS NPRLN  NSTRG  "input Y"     NINPUT NARRV  
+points NSIMV  i      NSTATS NINPUT NSIMV  canYourHearTheRumble NRETN  
+NSIMV  arraySize     NFUNCS        NFUND  calculateArea NPLIST NARRP  
+NARRD  inputArray    NSIMP  NSDECL arraySize     NDLIST NSDECL area   
+NARRD  count  NSTATS NFOR   NASGN  NSIMV  i      NILIT  0      NLSS   
+NSIMV  i      NSUB   NSIMV  arraySize     NILIT  2      NPLEQ  NSIMV  
+area   NMUL   NADD   NARRV  inputArray    NSIMV  i      NARRV  inputArray    
+NADD   NSIMV  i      NILIT  1      NSUB   NARRV  inputArray    NSIMV  
+i1     NARRV  inputArray    NSIMV  i      NSTATS NSTEQ  NSIMV  area   
+NFLIT  0.5    NRETN  NSIMV  area   NFUNCS        NFUND  Circe  NPLIST 
+NARRP  NARRD  inputArray    NSIMP  NSDECL arraySize     NDLIST NSDECL 
+area   NARRD  count  NSTATS NREPT  NASGN  NSIMV  area   NILIT  7      
+NSTATS NPRLN  NSTRG  "number of points must be less than 20 and greater than 2."    
+NSTATS NINPUT NSIMV  arraySize     NPLEQ  NSIMV  area   NILIT  1      
+NBOOL  NAND   NGRT   NSIMV  arraySize     NSIMV  MAXINPUTSIZE  NGRT   
+NSIMV  arraySize     NILIT  2      NSTATS NSTEQ  NSIMV  area   NFLIT  
+0.5    NRETN  NSIMV  area   NMAIN  NSDLST NSDECL arraySize     NSDECL 
+test   NSTATS NIFTH  NTRUE  NASGN  NSIMV  arraySize     NILIT  7      
+NIFTE  NFALS  NASGN  NSIMV  arraySize     NILIT  9      NASGN  NSIMV  
+arraySize     NILIT  8      
+

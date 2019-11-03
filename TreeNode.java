@@ -140,7 +140,12 @@ public class TreeNode {
 		s+=fString;
 		count+=(fString.length()/7);
 		// new line
-		if (count%10 == 0||count>10){out.println();  count=0;}
+		if (count%10 == 0||count>10)
+		{
+			out.println();
+			s+="\n";
+			count=0;
+		}
 		
 		if (tr.symbol != null) {
 			fString=formatString(tr.symbol.getName()) + " ";
@@ -148,7 +153,12 @@ public class TreeNode {
 			s+=fString;
 			count+=(fString.length()/7);
 			// new line
-			if (count%10 == 0||count>10) {out.println();  count=0;}
+			if (count%10 == 0||count>10)
+			{
+				out.println();  
+				s+="\n";
+				count=0;
+			}
 
 		}		
 		else if (tr.type   != null) {
@@ -157,12 +167,22 @@ public class TreeNode {
 			s+=fString;
 			count+=(fString.length()/7);
 			// new line
-			if (count%10 == 0||count>10){ out.println();  count=0;}
+			if (count%10 == 0||count>10)
+			{
+				out.println();  
+				s+="\n";
+				count=0;
+			}
 		}
 		if (tr.left   != null) { printTree(out,tr.left);   }
 		if (tr.middle != null) { printTree(out,tr.middle); }
 		if (tr.right  != null) { printTree(out,tr.right);  }
-		if (tr.nodeValue == NPROG && count%10 != 0) {out.println();  count=0;};
+		if (tr.nodeValue == NPROG && count%10 != 0)
+		{
+			out.println();  
+			s+="\n";
+			count=0;
+		}
 	}
 
 	//modified printTree so padding worked correctly
