@@ -35,7 +35,7 @@ public class A3
 		//System.out.println("s string: + "+output.getString()+TreeNode.getString());
 		
 		try (PrintWriter ol = new PrintWriter("outputListing.lst")) {
-			ol.println(output.getString()+TreeNode.getString());
+			ol.println(output.getString());//+TreeNode.getString());
 		}
 		//TreeNode.writeStringToFile(outputFile);
 		System.out.println();

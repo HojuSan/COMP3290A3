@@ -18,7 +18,8 @@ public class Parser
 	private Token lookAhead;				//Lookahead toekn for LL(1)
 	private OutputController outPut;		//Output controller reference
 	private SymbolTable symbolTable;
-	private boolean debug = true;
+	private boolean debug = false
+	;
 
     //Constructor
 	public Parser(OutputController outputController)
